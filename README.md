@@ -8,6 +8,7 @@ SmartInvest Assistant is an advanced AI-driven financial analysis platform built
 
 * **Real-Time Financial Metrics:** Integrates Polygon.io API for up-to-date stock and financial data retrieval.
 * **Retrieval-Augmented Generation (RAG):** Utilizes a curated Fortune 500 dataset to provide accurate and context-specific responses.
+* **Dynamic Visual Analytics:** Leverages OpenAI's Code Interpreter to generate intuitive financial visualizations.
 
 
 ## Technical Details
@@ -16,6 +17,7 @@ SmartInvest Assistant is an advanced AI-driven financial analysis platform built
 
 * **File Search (RAG):** Efficiently accesses the 2024 Fortune 500 PDF for accurate company information.
 * **Function Calling:** Employs Polygon.io API calls dynamically for various financial metrics such as revenue, profit margins, and stock prices.
+* **Code Interpreter:** Produces interactive charts and visualizations, enhancing user comprehension of complex financial data.
 
 ### Tech Stack
 
