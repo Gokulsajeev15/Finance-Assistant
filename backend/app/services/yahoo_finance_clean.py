@@ -89,6 +89,12 @@ class EnhancedYahooFinanceService:
                         "current": float(rsi.iloc[-1]) if not pd.isna(rsi.iloc[-1]) else None,
                         "interpretation": self._get_rsi_signal(rsi.iloc[-1]) if not pd.isna(rsi.iloc[-1]) else "No data"
                     },
+                    "macd": {
+                        "macd_line": None,
+                        "signal_line": None,
+                        "histogram": None,
+                        "interpretation": "MACD data not available"
+                    },
                     "bollinger_bands": {
                         "upper": float(bb_upper.iloc[-1]) if not pd.isna(bb_upper.iloc[-1]) else None,
                         "middle": float(bb_middle.iloc[-1]) if not pd.isna(bb_middle.iloc[-1]) else None,
@@ -102,9 +108,10 @@ class EnhancedYahooFinanceService:
                         "ema_26": float(ema_26.iloc[-1]) if not pd.isna(ema_26.iloc[-1]) else None,
                         "interpretation": "Moving averages"
                     },
-                    "volatility": {
-                        "current": float(volatility.iloc[-1]) if not pd.isna(volatility.iloc[-1]) else None,
-                        "interpretation": "20-day volatility"
+                    "stochastic": {
+                        "k_percent": None,
+                        "d_percent": None,
+                        "interpretation": "Stochastic data not available"
                     }
                 },
                 "price_data": {

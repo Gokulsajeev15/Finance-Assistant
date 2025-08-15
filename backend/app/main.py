@@ -27,7 +27,12 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify exact origins
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",  # Vite default port
+        "http://127.0.0.1:5173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,18 +48,18 @@ async def startup_event():
     """Initialize services when app starts"""
     try:
         await cache_service.connect()
-        logger.info("✅ Services initialized successfully")
+        logger.info("Services initialized successfully")
     except Exception as e:
-        logger.warning(f"⚠️ Some services failed to initialize: {e}")
+        logger.warning(f"Some services failed to initialize: {e}")
 
 @app.on_event("shutdown") 
 async def shutdown_event():
     """Clean up when app shuts down"""
     try:
         await cache_service.disconnect()
-        logger.info("✅ Services cleaned up successfully")
+        logger.info("Services cleaned up successfully")
     except Exception as e:
-        logger.warning(f"⚠️ Error during cleanup: {e}")
+        logger.warning(f"Error during cleanup: {e}")
 
 @app.get("/", response_model=BaseResponse)
 async def root():
@@ -70,8 +75,7 @@ async def health_check():
     """Health check endpoint"""
     return HealthResponse(
         status="healthy",
-        message="Finance Assistant API is running",
-        timestamp="2025-08-14T00:00:00Z",
+        version="2.0.0",
         services={
             "yahoo_finance": "active",
             "fortune500": "active", 

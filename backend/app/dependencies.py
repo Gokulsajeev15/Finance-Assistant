@@ -2,7 +2,7 @@
 Dependencies for the Finance Assistant API
 """
 from .services.fortune500_service import Fortune500Service
-from .services.yahoo_finance_service import EnhancedYahooFinanceService
+from .services.yahoo_finance_clean import EnhancedYahooFinanceService
 from .services.ai_query_processor import AIQueryProcessor
 from .services.cache_service import CacheService
 
