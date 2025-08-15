@@ -6,7 +6,9 @@ A comprehensive financial analysis platform featuring an AI-powered backend API 
 
 Finance Assistant combines professional-grade financial analysis with an intuitive user interface. Users can analyze stocks using company names or ticker symbols, get detailed technical analysis reports, and interact with an AI assistant that understands natural language financial queries.
 
-[Screenshot placeholder - Main application interface]
+<img width="1466" height="839" alt="Screenshot 2025-08-15 at 19 02 41" src="https://github.com/user-attachments/assets/2f110db2-5bfe-46ff-8ce2-7eba955b5bf5" />
+
+
 
 ## Key Features
 
@@ -26,7 +28,8 @@ Finance Assistant combines professional-grade financial analysis with an intuiti
 - **High Performance**: In-memory caching and optimized data processing
 - **Production Ready**: Scalable architecture with comprehensive error handling
 
-[Screenshot placeholder - Technical analysis interface]
+<img width="1470" height="837" alt="Screenshot 2025-08-15 at 19 03 00" src="https://github.com/user-attachments/assets/24e433d8-2fb6-4d57-919c-1fb491f777f6" />
+
 
 ## Technology Stack
 
@@ -44,6 +47,7 @@ Finance Assistant combines professional-grade financial analysis with an intuiti
 - **Pydantic**: Data validation and serialization
 - **Uvicorn**: Production-grade ASGI server
 
+<img width="1470" height="837" alt="Screenshot 2025-08-15 at 19 03 19" src="https://github.com/user-attachments/assets/c7d5eade-600d-4b79-a705-334463b441c8" />
 
 
 ## Getting Started
@@ -57,7 +61,7 @@ Finance Assistant combines professional-grade financial analysis with an intuiti
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone <repository-url>     (ssh or https)
    cd Finance-Assistant
    ```
 
