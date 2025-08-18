@@ -68,7 +68,8 @@ Finance Assistant combines professional-grade financial analysis with cutting-ed
 - **Transformers**: Hugging Face model loading and inference
 - **Sentence Transformers**: Advanced NLP capabilities
 
-<img width="1470" height="837" alt="Screenshot 2025-08-15 at 19 03 19" src="https://github.com/user-attachments/assets/c7d5eade-600d-4b79-a705-334463b441c8" />
+<img width="1467" height="832" alt="Screenshot 2025-08-18 at 22 46 15" src="https://github.com/user-attachments/assets/e82e2772-6703-40ce-b340-275c683613e3" />
+
 
 ## Getting Started
 
