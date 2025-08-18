@@ -102,19 +102,21 @@ class SimpleCompanyService:
             return None
     
     def search_companies(self, search_term):
-        """Search for companies by name or ticker"""
+        """Search for companies by name, ticker, or sector"""
         try:
             search_term = search_term.lower()
             results = []
             
             # Look through all companies
             for company in self.companies:
-                # Check if search term is in company name or ticker
+                # Check if search term is in company name, ticker, OR sector
                 if (search_term in company['company'].lower() or 
-                    search_term in company['ticker'].lower()):
+                    search_term in company['ticker'].lower() or
+                    search_term in company['sector'].lower()):
                     results.append(company)
             
-            return results
+            # Sort results by rank (biggest companies first)
+            return sorted(results, key=lambda x: x['rank'])
             
         except Exception as e:
             logger.error(f"Error searching companies: {e}")

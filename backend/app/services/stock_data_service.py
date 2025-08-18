@@ -162,32 +162,5 @@ class SimpleStockService:
             logger.error(f"Error searching for {query}: {e}")
             return []
     
-    def get_market_status(self):
-        """Check if the market is open or closed"""
-        try:
-            from datetime import datetime, time
-            import pytz
-            
-            # Get current time in Eastern Time (where NYSE is)
-            et = pytz.timezone('US/Eastern')
-            current_time = datetime.now(et).time()
-            
-            # Market is open Monday-Friday, 9:30 AM to 4:00 PM ET
-            market_open = time(9, 30)
-            market_close = time(16, 0)
-            
-            is_weekend = datetime.now(et).weekday() >= 5  # Saturday = 5, Sunday = 6
-            
-            if is_weekend:
-                return {"status": "closed", "reason": "Weekend"}
-            elif market_open <= current_time <= market_close:
-                return {"status": "open", "reason": "Market hours"}
-            else:
-                return {"status": "closed", "reason": "After hours"}
-                
-        except Exception as e:
-            logger.error(f"Error checking market status: {e}")
-            return {"status": "unknown", "reason": "Could not determine"}
-
 # Import pandas for the RSI calculation
 import pandas as pd
