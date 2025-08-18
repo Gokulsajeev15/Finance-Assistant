@@ -18,12 +18,12 @@ class CacheService:
     
     async def connect(self):
         """Initialize cache (no external connection needed)"""
-        logger.info("✅ Cache service ready (in-memory)")
+        logger.info("Cache service ready (in-memory)")
     
     async def disconnect(self):
         """Clean up cache"""
         self.cache.clear()
-        logger.info("✅ Cache cleared")
+        logger.info("Cache cleared")
     
     async def get(self, key: str) -> Optional[Any]:
         """Get value from cache"""

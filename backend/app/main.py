@@ -2,6 +2,7 @@
 Finance Assistant API Main Application
 Clean, simple, and human-readable code structure
 """
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -15,13 +16,32 @@ from .routers import companies, technical_analysis, ai_queries
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifecycle"""
+    # Startup
+    try:
+        await cache_service.connect()
+        logger.info("Services initialized successfully")
+    except Exception as e:
+        logger.warning(f"Some services failed to initialize: {e}")
+    
+    yield
+    
+    # Shutdown
+    try:
+        await cache_service.disconnect()
+        logger.info("Services cleaned up successfully")
+    except Exception as e:
+        logger.warning(f"Error during cleanup: {e}")
+
 # Create FastAPI app
 app = FastAPI(
     title="Finance Assistant API",
     description="Clean and simple financial analysis platform",
-    version="2.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan  # Use modern lifespan context manager
 )
 
 # Add CORS middleware
@@ -38,36 +58,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
 app.include_router(companies.router)
 app.include_router(technical_analysis.router)
 app.include_router(ai_queries.router)
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services when app starts"""
-    try:
-        await cache_service.connect()
-        logger.info("Services initialized successfully")
-    except Exception as e:
-        logger.warning(f"Some services failed to initialize: {e}")
-
-@app.on_event("shutdown") 
-async def shutdown_event():
-    """Clean up when app shuts down"""
-    try:
-        await cache_service.disconnect()
-        logger.info("Services cleaned up successfully")
-    except Exception as e:
-        logger.warning(f"Error during cleanup: {e}")
 
 @app.get("/", response_model=BaseResponse)
 async def root():
     """Welcome message"""
     return BaseResponse(
         message="Welcome to Finance Assistant API",
-        status="success",
-        timestamp="2025-08-14T00:00:00Z"
+        success=True  # This matches the model
+        # timestamp is auto-generated
     )
 
 @app.get("/health", response_model=HealthResponse)
@@ -75,7 +76,6 @@ async def health_check():
     """Health check endpoint"""
     return HealthResponse(
         status="healthy",
-        version="2.0.0",
         services={
             "yahoo_finance": "active",
             "fortune500": "active", 

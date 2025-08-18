@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { financeAPI } from '../api_services/financial_api_client';
 import { BarChart3 } from 'lucide-react';
 
@@ -107,19 +108,19 @@ const StockAnalysisPanel = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Current Price:</span>
-                  <span className="font-semibold">${analysis.technical_data?.price_data?.current_price?.toFixed(2) || analysis.price_data?.current_price?.toFixed(2) || 'N/A'}</span>
+                  <span className="font-semibold">${analysis.stock_data?.current_price?.toFixed(2) || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">6M High:</span>
-                  <span className="font-semibold">${analysis.technical_data?.price_data?.high_6m?.toFixed(2) || analysis.price_data?.high_6m?.toFixed(2) || 'N/A'}</span>
+                  <span className="text-gray-600">52-Week High:</span>
+                  <span className="font-semibold">${analysis.stock_data?.['52_week_high']?.toFixed(2) || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">6M Low:</span>
-                  <span className="font-semibold">${analysis.technical_data?.price_data?.low_6m?.toFixed(2) || analysis.price_data?.low_6m?.toFixed(2) || 'N/A'}</span>
+                  <span className="text-gray-600">52-Week Low:</span>
+                  <span className="font-semibold">${analysis.stock_data?.['52_week_low']?.toFixed(2) || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Avg Volume:</span>
-                  <span className="font-semibold">{(analysis.technical_data?.price_data?.volume_avg || analysis.price_data?.volume_avg)?.toLocaleString() || 'N/A'}</span>
+                  <span className="text-gray-600">Volume:</span>
+                  <span className="font-semibold">{(analysis.stock_data?.volume)?.toLocaleString() || 'N/A'}</span>
                 </div>
               </div>
             </div>
@@ -130,13 +131,13 @@ const StockAnalysisPanel = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">RSI:</span>
-                  <span className={`font-semibold ${getRSIColor(analysis.technical_data?.indicators?.rsi?.current || analysis.indicators?.rsi?.current)}`}>
-                    {analysis.technical_data?.indicators?.rsi?.current?.toFixed(2) || analysis.indicators?.rsi?.current?.toFixed(2) || 'N/A'}
+                  <span className={`font-semibold ${getRSIColor(analysis.technical_data?.rsi?.value || analysis.technical_data?.rsi?.current)}`}>
+                    {analysis.technical_data?.rsi?.value?.toFixed(2) || analysis.technical_data?.rsi?.current?.toFixed(2) || 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Signal:</span>
-                  <span className="text-sm text-gray-700">{analysis.technical_data?.indicators?.rsi?.interpretation || analysis.indicators?.rsi?.interpretation || 'N/A'}</span>
+                  <span className="text-sm text-gray-700">{analysis.technical_data?.rsi?.interpretation || 'N/A'}</span>
                 </div>
               </div>
             </div>
@@ -148,21 +149,29 @@ const StockAnalysisPanel = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <p className="text-gray-600 text-sm">SMA 20:</p>
-                <p className="font-semibold">${analysis.technical_data?.indicators?.moving_averages?.sma_20?.toFixed(2) || analysis.indicators?.moving_averages?.sma_20?.toFixed(2) || 'N/A'}</p>
+                <p className="font-semibold">${analysis.technical_data?.sma_20?.toFixed(2) || 'N/A'}</p>
               </div>
               <div className="text-center">
                 <p className="text-gray-600 text-sm">SMA 50:</p>
-                <p className="font-semibold">${analysis.technical_data?.indicators?.moving_averages?.sma_50?.toFixed(2) || analysis.indicators?.moving_averages?.sma_50?.toFixed(2) || 'N/A'}</p>
+                <p className="font-semibold">${analysis.technical_data?.sma_50?.toFixed(2) || 'N/A'}</p>
               </div>
               <div className="text-center">
                 <p className="text-gray-600 text-sm">EMA 12:</p>
-                <p className="font-semibold">${analysis.technical_data?.indicators?.moving_averages?.ema_12?.toFixed(2) || analysis.indicators?.moving_averages?.ema_12?.toFixed(2) || 'N/A'}</p>
+                <p className="font-semibold">${analysis.technical_data?.ema_12?.toFixed(2) || 'N/A'}</p>
               </div>
               <div className="text-center">
                 <p className="text-gray-600 text-sm">EMA 26:</p>
-                <p className="font-semibold">${analysis.technical_data?.indicators?.moving_averages?.ema_26?.toFixed(2) || analysis.indicators?.moving_averages?.ema_26?.toFixed(2) || 'N/A'}</p>
+                <p className="font-semibold">${analysis.technical_data?.ema_26?.toFixed(2) || 'N/A'}</p>
               </div>
             </div>
+            {analysis.technical_data?.trend && (
+              <div className="mt-4 text-center">
+                <p className="text-gray-600 text-sm">Trend:</p>
+                <p className={`font-semibold ${analysis.technical_data.trend === 'Up' ? 'text-green-600' : 'text-red-600'}`}>
+                  {analysis.technical_data.trend}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Bollinger Bands */}
@@ -171,15 +180,15 @@ const StockAnalysisPanel = () => {
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-gray-600 text-sm">Upper:</p>
-                <p className="font-semibold">${analysis.technical_data?.indicators?.bollinger_bands?.upper?.toFixed(2) || analysis.indicators?.bollinger_bands?.upper?.toFixed(2) || 'N/A'}</p>
+                <p className="font-semibold">${analysis.technical_data?.bollinger_bands?.upper?.toFixed(2) || 'N/A'}</p>
               </div>
               <div className="text-center">
                 <p className="text-gray-600 text-sm">Middle:</p>
-                <p className="font-semibold">${analysis.technical_data?.indicators?.bollinger_bands?.middle?.toFixed(2) || analysis.indicators?.bollinger_bands?.middle?.toFixed(2) || 'N/A'}</p>
+                <p className="font-semibold">${analysis.technical_data?.bollinger_bands?.middle?.toFixed(2) || 'N/A'}</p>
               </div>
               <div className="text-center">
                 <p className="text-gray-600 text-sm">Lower:</p>
-                <p className="font-semibold">${analysis.technical_data?.indicators?.bollinger_bands?.lower?.toFixed(2) || analysis.indicators?.bollinger_bands?.lower?.toFixed(2) || 'N/A'}</p>
+                <p className="font-semibold">${analysis.technical_data?.bollinger_bands?.lower?.toFixed(2) || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -190,3 +199,4 @@ const StockAnalysisPanel = () => {
 };
 
 export default StockAnalysisPanel;
+

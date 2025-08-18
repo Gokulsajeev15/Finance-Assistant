@@ -94,6 +94,16 @@ class SimpleStockService:
             sma_20 = history['Close'].rolling(window=20).mean().iloc[-1]  # 20-day average
             sma_50 = history['Close'].rolling(window=50).mean().iloc[-1]  # 50-day average
             
+            # Calculate exponential moving averages
+            ema_12 = history['Close'].ewm(span=12).mean().iloc[-1]  # 12-day EMA
+            ema_26 = history['Close'].ewm(span=26).mean().iloc[-1]  # 26-day EMA
+            
+            # Calculate Bollinger Bands (20-period, 2 standard deviations)
+            sma_20_for_bb = history['Close'].rolling(window=20).mean()
+            std_20 = history['Close'].rolling(window=20).std()
+            upper_band = sma_20_for_bb + (std_20 * 2)
+            lower_band = sma_20_for_bb - (std_20 * 2)
+            
             return {
                 "rsi": {
                     "value": float(rsi),
@@ -101,6 +111,13 @@ class SimpleStockService:
                 },
                 "sma_20": float(sma_20) if not pd.isna(sma_20) else None,
                 "sma_50": float(sma_50) if not pd.isna(sma_50) else None,
+                "ema_12": float(ema_12) if not pd.isna(ema_12) else None,
+                "ema_26": float(ema_26) if not pd.isna(ema_26) else None,
+                "bollinger_bands": {
+                    "upper": float(upper_band.iloc[-1]) if not pd.isna(upper_band.iloc[-1]) else None,
+                    "middle": float(sma_20) if not pd.isna(sma_20) else None,
+                    "lower": float(lower_band.iloc[-1]) if not pd.isna(lower_band.iloc[-1]) else None
+                },
                 "trend": "Up" if sma_20 > sma_50 else "Down"
             }
             

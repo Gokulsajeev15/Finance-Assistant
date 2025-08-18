@@ -152,3 +152,40 @@ class SimpleCompanyService:
         except Exception as e:
             logger.error(f"Error getting sectors: {e}")
             return []
+    
+    def get_company_info(self, company_name):
+        """Get detailed information about a specific company by name or ticker"""
+        try:
+            # First try to find by exact ticker match
+            company = self.get_company_by_ticker(company_name)
+            if company:
+                return company
+            
+            # If not found by ticker, try by name
+            company = self.get_company_by_name(company_name)
+            if company:
+                return company
+            
+            # If still not found, return None
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error getting company info for {company_name}: {e}")
+            return None
+    
+    def get_companies_by_industry(self, industry):
+        """Get all companies in a specific industry"""
+        try:
+            industry = industry.lower()
+            results = []
+            
+            for company in self.companies:
+                if company.get('industry') and industry in company['industry'].lower():
+                    results.append(company)
+            
+            # Sort by rank (biggest companies first)
+            return sorted(results, key=lambda x: x['rank'])
+            
+        except Exception as e:
+            logger.error(f"Error getting industry {industry}: {e}")
+            return []

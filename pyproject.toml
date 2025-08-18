@@ -1,6 +1,5 @@
 [project]
 name = "finance-assistant"
-version = "2.0.0"
 description = "Comprehensive financial analysis platform with AI-powered queries, technical analysis, and portfolio optimization"
 readme = "README.md"
 requires-python = ">=3.11"

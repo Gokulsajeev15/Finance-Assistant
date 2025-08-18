@@ -49,7 +49,7 @@ class HuggingFaceFinancialAI:
                 device=0 if torch.cuda.is_available() else -1
             )
             
-            logger.info("✅ AI models loaded successfully!")
+            logger.info("AI models loaded successfully!")
             
         except Exception as e:
             logger.error(f"AI model loading failed: {e}")
@@ -106,6 +106,18 @@ class HuggingFaceFinancialAI:
     
     def _classify_intent_ai(self, question: str) -> str:
         """Use AI embeddings to classify intent"""
+        # First, check for obvious keywords that should override AI classification
+        question_lower = question.lower()
+        
+        # Direct keyword matching for education questions
+        if any(word in question_lower for word in ['what is', 'explain', 'how does', 'define', 'diversification', 'compound', 'p/e', 'ratio']):
+            return 'education'
+        
+        # Direct keyword matching for strategy questions
+        if any(word in question_lower for word in ['how to invest', 'investment advice', 'strategy', 'should i buy']):
+            return 'strategy'
+        
+        # If no direct keywords, use AI classification
         if not self.sentence_model:
             return 'general'
         
@@ -167,18 +179,15 @@ class HuggingFaceFinancialAI:
             
             # Generate smart response based on AI sentiment
             if sentiment and sentiment[0]['label'] == 'positive':
-                emoji = "🚀" if change_percent > 0 else "💪"
                 tone = "looking strong"
             elif sentiment and sentiment[0]['label'] == 'negative':
-                emoji = "📉" if change_percent < 0 else "⚠️"
                 tone = "facing challenges"
             else:
-                emoji = "📊"
                 tone = "trading steadily"
             
-            message = f"{emoji} **{company_name}** is {tone}\n\n"
-            message += f"💰 **${price:.2f}** ({change_percent:+.1f}% today)\n\n"
-            message += f"🤖 **AI Sentiment:** {sentiment[0]['label'].title()} ({sentiment[0]['score']:.1%} confidence)" if sentiment else ""
+            message = f"**{company_name}** is {tone}\n\n"
+            message += f"**${price:.2f}** ({change_percent:+.1f}% today)\n\n"
+            message += f"**AI Sentiment:** {sentiment[0]['label'].title()} ({sentiment[0]['score']:.1%} confidence)" if sentiment else ""
             
             return {
                 "type": "price",
@@ -206,12 +215,12 @@ class HuggingFaceFinancialAI:
             price = stock_data.get('current_price', 0)
             change_percent = stock_data.get('change_percent', 0)
             
-            message = f"🤖 **AI Analysis: {company_name}**\n\n"
-            message += f"📊 **${price:.2f}** ({change_percent:+.1f}%)\n\n"
+            message = f"**AI Analysis: {company_name}**\n\n"
+            message += f"**${price:.2f}** ({change_percent:+.1f}%)\n\n"
             
             # Add technical indicators if available
             if technical_data and 'error' not in technical_data:
-                message += "📈 **Technical Indicators:**\n"
+                message += "**Technical Indicators:**\n"
                 if 'rsi' in technical_data:
                     rsi = technical_data['rsi'].get('value', 0)
                     rsi_interp = technical_data['rsi'].get('interpretation', '')
@@ -271,18 +280,18 @@ class HuggingFaceFinancialAI:
             company_name = stock_data.get('company_name', ticker)
             price = stock_data.get('current_price', 0)
             
-            message = f"🏢 **{company_name}**\n\n"
+            message = f"**{company_name}**\n\n"
             
             if company_info:
                 sector = company_info.get('sector', 'Unknown')
                 rank = company_info.get('rank', 'N/A')
                 revenue = company_info.get('revenue', 0)
                 
-                message += f"🏭 **Sector:** {sector}\n"
-                message += f"📊 **Fortune 500 Rank:** #{rank}\n"
-                message += f"💰 **Revenue:** ${revenue:,} million\n"
+                message += f"**Sector:** {sector}\n"
+                message += f"**Fortune 500 Rank:** #{rank}\n"
+                message += f"**Revenue:** ${revenue:,} million\n"
             
-            message += f"📈 **Current Stock:** ${price:.2f}"
+            message += f"**Current Stock:** ${price:.2f}"
             
             return {
                 "type": "company",
@@ -314,18 +323,18 @@ class HuggingFaceFinancialAI:
                     result = self.qa_pipeline(question=question, context=context)
                     
                     if result['score'] > 0.1:
-                        message = f"🤖 **AI Education**\n\n💡 **{result['answer']}**\n\n"
+                        message = f"**AI Education**\n\n**{result['answer']}**\n\n"
                         
                         # Add practical examples based on keywords
                         q_lower = question.lower()
                         if 'diversif' in q_lower:
-                            message += "📊 **Example:** Spread $1000 across: $400 stocks, $300 bonds, $200 international, $100 cash"
+                            message += "**Example:** Spread $1000 across: $400 stocks, $300 bonds, $200 international, $100 cash"
                         elif 'compound' in q_lower:
-                            message += "💰 **Example:** $1000 at 7% becomes $7,612 in 30 years!"
+                            message += "**Example:** $1000 at 7% becomes $7,612 in 30 years!"
                         elif 'p/e' in q_lower:
-                            message += "📈 **Example:** Apple at $150 with $6 earnings = P/E of 25"
+                            message += "**Example:** Apple at $150 with $6 earnings = P/E of 25"
                         
-                        message += "\n\n🎯 Ask me more financial questions!"
+                        message += "\n\nAsk me more financial questions!"
                         
                         return {
                             "type": "education",
@@ -347,26 +356,26 @@ class HuggingFaceFinancialAI:
         q = question.lower()
         
         if 'diversif' in q:
-            message = "🎯 **Diversification**\n\nDon't put all eggs in one basket! Spread your $1000 across different investments to reduce risk."
+            message = "**Diversification**\n\nDon't put all eggs in one basket! Spread your $1000 across different investments to reduce risk."
         elif 'compound' in q:
-            message = "💰 **Compound Interest**\n\nMoney growing on money! $1000 becomes $7,612 in 30 years at 7% annual return."
+            message = "**Compound Interest**\n\nMoney growing on money! $1000 becomes $7,612 in 30 years at 7% annual return."
         elif 'p/e' in q:
-            message = "📊 **P/E Ratio**\n\nStock Price ÷ Earnings. Shows how expensive a stock is relative to its profits."
+            message = "**P/E Ratio**\n\nStock Price ÷ Earnings. Shows how expensive a stock is relative to its profits."
         else:
-            message = f"🤖 **AI Assistant**\n\nGreat question! I can explain financial concepts, analyze stocks, and provide investment guidance. What would you like to know?"
+            message = f"**AI Assistant**\n\nGreat question! I can explain financial concepts, analyze stocks, and provide investment guidance. What would you like to know?"
         
         return {"type": "education", "message": message}
     
     def _ai_strategy_response(self, question: str) -> Dict[str, Any]:
         """AI-powered investment strategy advice"""
-        message = "💼 **AI Investment Strategy**\n\n"
-        message += "🎯 **Smart investing principles:**\n\n"
+        message = "**AI Investment Strategy**\n\n"
+        message += "**Smart investing principles:**\n\n"
         message += "• **Diversify** across different assets\n"
         message += "• **Think long-term** (time in market beats timing)\n"
         message += "• **Start early** (compound interest is powerful)\n"
         message += "• **Invest regularly** (dollar-cost averaging)\n"
         message += "• **Only invest** what you can afford to lose\n\n"
-        message += "⚠️ This is educational content, not personal advice."
+        message += "This is educational content, not personal advice."
         
         return {"type": "strategy", "message": message}
     
@@ -380,7 +389,7 @@ class HuggingFaceFinancialAI:
                 try:
                     result = self.qa_pipeline(question=question, context=context)
                     if result['score'] > 0.05:
-                        message = f"🤖 **AI Response**\n\n💡 {result['answer']}\n\n🎯 Ask me more about finance!"
+                        message = f"**AI Response**\n\n{result['answer']}\n\nAsk me more about finance!"
                         return {
                             "type": "general",
                             "message": message,
@@ -390,8 +399,8 @@ class HuggingFaceFinancialAI:
                     pass
         
         # Fallback guidance
-        message = "🤖 **AI Financial Assistant**\n\n"
-        message += "I can help with:\n📊 Stock analysis\n💰 Price queries\n🎓 Financial education\n💼 Investment strategies"
+        message = "**AI Financial Assistant**\n\n"
+        message += "I can help with:\nStock analysis\nPrice queries\nFinancial education\nInvestment strategies"
         
         return {"type": "general", "message": message}
     

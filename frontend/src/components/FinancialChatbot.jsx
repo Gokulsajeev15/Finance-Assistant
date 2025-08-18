@@ -1,5 +1,6 @@
 // Import React tools and icons
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { financeAPI } from '../api_services/financial_api_client';
 import { MessageCircle, Send } from 'lucide-react';
 
@@ -100,7 +101,7 @@ const FinancialChatbot = () => {
                   : 'bg-gray-100 text-gray-900'
               }`}
             >
-              <div className="whitespace-pre-line">{message.content}</div>
+              <ReactMarkdown>{message.content}</ReactMarkdown>
               
               {/* Show suggestions if available */}
               {message.data && message.data.suggestions && (

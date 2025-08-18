@@ -318,7 +318,7 @@ class CacheStats(BaseModel):
 # Health and Status Models
 class HealthResponse(BaseModel):
     status: str
-    version: str
+    version: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.now)
     services: Dict[str, str]
     cache_status: Optional[CacheStats] = None
