@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { financeAPI } from '../services/api';
+import { financeAPI } from '../api_services/financial_api_client';
 import { BarChart3 } from 'lucide-react';
 
-const TechnicalAnalysis = () => {
+const StockAnalysisPanel = () => {
   const [ticker, setTicker] = useState('');
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -189,4 +189,4 @@ const TechnicalAnalysis = () => {
   );
 };
 
-export default TechnicalAnalysis;
+export default StockAnalysisPanel;

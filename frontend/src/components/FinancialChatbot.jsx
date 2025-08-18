@@ -1,50 +1,62 @@
+// Import React tools and icons
 import { useState } from 'react';
-import { financeAPI } from '../services/api';
+import { financeAPI } from '../api_services/financial_api_client';
 import { MessageCircle, Send } from 'lucide-react';
 
-const AIChat = () => {
+const FinancialChatbot = () => {
+  // Store what the user is typing
   const [query, setQuery] = useState('');
+  
+  // Store all the messages (user questions and AI answers)
   const [messages, setMessages] = useState([]);
+  
+  // Track if AI is thinking
   const [loading, setLoading] = useState(false);
 
+  // Function that runs when user sends a message
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+    e.preventDefault();  // Don't refresh the page
+    if (!query.trim()) return;  // Don't send empty messages
 
+    // Add the user's message to the chat
     const userMessage = { type: 'user', content: query };
     setMessages(prev => [...prev, userMessage]);
-    setLoading(true);
+    setLoading(true);  // Show "thinking..." message
 
     try {
+      // Ask our AI to answer the question
       const response = await financeAPI.processAIQuery(query);
       const aiMessage = {
         type: 'ai',
         content: response.data.message || 'No response available',
         data: response.data
       };
+      // Add AI's answer to the chat
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
+      // If something went wrong, show an error message
       const errorMessage = {
         type: 'ai',
-        content: error.response?.data?.detail || 'Sorry, I encountered an error processing your query.',
+        content: error.response?.data?.detail || 'Sorry, I had trouble with that question.',
         error: true
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
-      setLoading(false);
-      setQuery('');
+      setLoading(false);  // Hide "thinking..." message
+      setQuery('');  // Clear the input box
     }
   };
 
+  // Example questions to help users get started
   const exampleQueries = [
-    "Analyze Apple",
-    "How is Tesla performing?", 
-    "What's Microsoft's revenue?",
-    "Technical analysis of Amazon",
-    "Show me Google's RSI",
-    "How is Disney doing?",
-    "What's Netflix worth?",
-    "Analyze Nvidia performance"
+    "What is Apple's stock price?",
+    "Tell me about Tesla", 
+    "How is Microsoft doing?",
+    "What is compound interest?",
+    "Explain P/E ratios",
+    "How should I invest?",
+    "What is diversification?",
+    "Analyze Google performance"
   ];
 
   return (
@@ -148,4 +160,4 @@ const AIChat = () => {
   );
 };
 
-export default AIChat;
+export default FinancialChatbot;

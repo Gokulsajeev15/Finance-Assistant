@@ -1,15 +1,16 @@
 """
 Dependencies for the Finance Assistant API
+Clean, descriptive file names that make sense!
 """
-from .services.fortune500_service import Fortune500Service
-from .services.yahoo_finance_clean import EnhancedYahooFinanceService
-from .services.ai_query_processor import AIQueryProcessor
-from .services.cache_service import CacheService
+from .services.company_database import SimpleCompanyService
+from .services.stock_data_service import SimpleStockService
+from .services.ai_financial_assistant import SimpleFinancialAI
+from .services.data_cache import CacheService
 
-# Initialize services
-fortune500_service = Fortune500Service()
-yahoo_service = EnhancedYahooFinanceService()
-ai_processor = AIQueryProcessor(yahoo_service, fortune500_service)
+# Create all our services
+fortune500_service = SimpleCompanyService()
+yahoo_service = SimpleStockService()
+ai_processor = SimpleFinancialAI(yahoo_service, fortune500_service)
 cache_service = CacheService()
 
 def get_fortune500_service():

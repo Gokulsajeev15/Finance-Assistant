@@ -1,5 +1,7 @@
-# Services package
-from .fortune500_service import Fortune500Service
-from .yahoo_finance_service import EnhancedYahooFinanceService
-from .ai_query_processor import AIQueryProcessor
-from .cache_service import CacheService
+# Finance Assistant Services
+# All our services with clear, descriptive names!
+from .company_database import SimpleCompanyService
+from .stock_data_service import SimpleStockService
+from .ai_financial_assistant import SimpleFinancialAI
+from .data_cache import CacheService
+
