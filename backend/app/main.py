@@ -1,15 +1,19 @@
 """
-Finance Assistant API Main Application
-Clean, simple, and human-readable code structure
+Simple Finance Assistant API Main Application
+Now powered by OpenAI GPT-4o mini with real-time financial data
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 from .models.models import BaseResponse, HealthResponse
-from .dependencies import cache_service
-from .routers import companies, technical_analysis, ai_queries
+from .routers import companies, technical, ai
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -18,79 +22,61 @@ logger = logging.getLogger(__name__)
 # Create FastAPI app
 app = FastAPI(
     title="Finance Assistant API",
-    description="Clean and simple financial analysis platform",
-    version="2.0.0",
+    description="Simple AI-powered financial analysis with real-time data",
+    version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
 
-# Add CORS middleware
+# Add CORS to allow frontend to talk to backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000", 
+        "http://localhost:3000",  # React dev server
         "http://127.0.0.1:3000",
-        "http://localhost:3001",  # Alternative Vite port
-        "http://127.0.0.1:3001",
-        "http://localhost:5173",  # Vite default port
+        "http://localhost:5173",  # Vite dev server  
         "http://127.0.0.1:5173"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 # Include routers
+# Include routers
 app.include_router(companies.router)
-app.include_router(technical_analysis.router)
-app.include_router(ai_queries.router)
+app.include_router(technical.router)
+app.include_router(ai.router)
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services when app starts"""
-    try:
-        await cache_service.connect()
-        logger.info("Services initialized successfully")
-    except Exception as e:
-        logger.warning(f"Some services failed to initialize: {e}")
-
-@app.on_event("shutdown") 
-async def shutdown_event():
-    """Clean up when app shuts down"""
-    try:
-        await cache_service.disconnect()
-        logger.info("Services cleaned up successfully")
-    except Exception as e:
-        logger.warning(f"Error during cleanup: {e}")
-
-@app.get("/", response_model=BaseResponse)
+@app.get("/")
 async def root():
     """Welcome message"""
-    return BaseResponse(
-        message="Welcome to Finance Assistant API",
-        status="success",
-        timestamp="2025-08-14T00:00:00Z"
-    )
+    return {
+        "message": "Welcome to Finance Assistant API",
+        "status": "running",
+        "version": "3.0.0"
+    }
 
-@app.get("/health", response_model=HealthResponse)
+@app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return HealthResponse(
-        status="healthy",
-        version="2.0.0",
-        services={
+    """Check if everything is working"""
+    ai_status = "ready" if os.getenv('OPENAI_API_KEY') else "needs_api_key"
+    
+    return {
+        "status": "healthy",
+        "version": "3.0.0",
+        "services": {
             "yahoo_finance": "active",
-            "fortune500": "active", 
-            "cache": "active",
-            "ai_processor": "active"
+            "companies": "active", 
+            "openai_ai": ai_status
         }
-    )
+    }
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    """Handle unexpected errors gracefully"""
-    logger.error(f"Unexpected error: {exc}")
+async def handle_errors(request, error):
+    """Handle any unexpected errors"""
+    logger.error(f"Unexpected error: {error}")
     return JSONResponse(
         status_code=500,
-        content={"error": "Internal server error", "detail": str(exc)}
+        content={"error": "Something went wrong", "detail": str(error)}
     )

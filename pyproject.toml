@@ -1,7 +1,7 @@
 [project]
 name = "finance-assistant"
-version = "2.0.0"
-description = "Comprehensive financial analysis platform with AI-powered queries, technical analysis, and portfolio optimization"
+version = "3.1.0"
+description = "Simple AI-powered financial analysis platform with real-time data - perfect for learning Python!"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -16,12 +16,10 @@ dependencies = [
     "numpy>=1.24.0",
     
     # AI/ML for financial analysis
-    "transformers>=4.30.0",
-    "torch>=2.0.0",
-    "sentence-transformers>=2.2.0",
+    "openai>=1.45.0",
     
     # Basic utilities
     "python-dateutil>=2.8.2",
     "requests>=2.31.0",
-    "cachetools>=5.3.0",
+    "python-dotenv>=1.0.0",
 ]

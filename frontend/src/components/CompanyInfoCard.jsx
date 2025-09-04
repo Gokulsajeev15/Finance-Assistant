@@ -1,14 +1,4 @@
 const CompanyCard = ({ company }) => {
-  const formatNumber = (num) => {
-    if (!num) return 'N/A';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(num * 1000000); // Assuming values are in millions
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       <div className="flex justify-between items-start mb-4">
@@ -25,11 +15,11 @@ const CompanyCard = ({ company }) => {
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <p className="text-sm text-gray-500">Revenue</p>
-          <p className="text-lg font-semibold text-green-600">{formatNumber(company.revenue)}</p>
+          <p className="text-lg font-semibold text-green-600">{company.revenue}</p>
         </div>
         <div>
           <p className="text-sm text-gray-500">Profit</p>
-          <p className="text-lg font-semibold text-blue-600">{formatNumber(company.profit)}</p>
+          <p className="text-lg font-semibold text-blue-600">{company.profit}</p>
         </div>
       </div>
       
