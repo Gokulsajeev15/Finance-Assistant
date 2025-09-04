@@ -1,40 +1,42 @@
 # Finance Assistant
 
-A comprehensive financial analysis platform featuring **real AI-powered backend API** using Hugging Face models and a modern React frontend. The system provides real-time stock data, technical analysis, and intelligent financial insights through both a web interface and REST API.
+A comprehensive financial analysis platform featuring **real AI-powered backend API** using Hugging Face models and a modern React frontend. The system provides real-time stock data for the **top 100 companies by market cap**, technical analysis, and intelligent financial insights through both a web interface and REST API.
 
 ## Key Features
 
-- **Real AI Models**: Using actual machine learning models instead of rule-based systems
-- **FinBERT Integration**: Financial sentiment analysis powered by ProsusAI/finbert
-- **Advanced NLP**: Intent classification using Sentence Transformers
-- **Smart Q&A**: Question answering with RoBERTa-based models
-- **GPU Acceleration**: Automatic CUDA detection for faster AI processing
+- **Real-Time Data**: Dynamic top 100 companies by market cap from Yahoo Finance API
+- **Real AI Models**: Actual machine learning models (FinBERT, RoBERTa, Sentence Transformers)
+- **Technical Analysis**: RSI, Bollinger Bands, Moving Averages, and trend analysis
+- **Smart Search**: Search companies by name, sector, or ticker symbol
+- **AI Assistant**: Natural language processing for financial questions
+- **High Performance**: In-memory caching with 6-hour auto-refresh
+- **Modern UI**: Clean React interface with Tailwind CSS
 
-## Overview
+## System Architecture
 
-Finance Assistant combines professional-grade financial analysis with cutting-edge AI capabilities. Users can analyze stocks using company names or ticker symbols, get detailed technical analysis reports, and interact with an AI assistant that truly understands natural language financial queries using real machine learning models.
+Finance Assistant combines professional-grade financial analysis with cutting-edge AI capabilities. Users can analyze any of the top 100 companies using company names or ticker symbols, get detailed technical analysis reports, and interact with an AI assistant powered by real machine learning models.
 
-<img width="1466" height="839" alt="Screenshot 2025-08-15 at 19 02 41" src="https://github.com/user-attachments/assets/2f110db2-5bfe-46ff-8ce2-7eba955b5bf5" />
+![Finance Assistant Screenshot](https://github.com/user-attachments/assets/2f110db2-5bfe-46ff-8ce2-7eba955b5bf5)
 
-## Key Features
+## Application Features
 
 ### Frontend Application
-- **Clean Interface**: Black and white design focused on data clarity
-- **Company Search**: Browse and search Fortune 500 companies with detailed filtering
-- **Technical Analysis**: Interactive charts and indicators with company name support
-- **AI Assistant**: **Real AI-powered** natural language processing for financial questions
-- **Real-time Data**: Live integration with financial data sources
+- **Clean Interface**: Professional black and white design focused on data clarity
+- **Company Browser**: Browse and search top 100 companies by market cap with sector filtering
+- **Technical Analysis**: Interactive charts and indicators with real company name support
+- **AI Assistant**: Real AI-powered natural language processing for financial questions
+- **Real-time Data**: Live integration with Yahoo Finance API
 - **Responsive Design**: Works seamlessly across desktop and mobile devices
 
 ### Backend API
+- **Dynamic Company Database**: Real-time top 100 companies by market cap (auto-updated every 6 hours)
 - **Stock Data**: Real-time stock prices and comprehensive company information
 - **Technical Analysis**: RSI, Bollinger Bands, Moving Averages, and trend analysis
-- **Fortune 500 Database**: Complete company database with sector and industry data
-- **AI Query Processing**: **Real machine learning models** for natural language understanding
+- **AI Query Processing**: Real machine learning models for natural language understanding
 - **High Performance**: In-memory caching and optimized data processing
 - **Production Ready**: Scalable architecture with comprehensive error handling
 
-<img width="1470" height="837" alt="Screenshot 2025-08-15 at 19 03 00" src="https://github.com/user-attachments/assets/24e433d8-2fb6-4d57-919c-1fb491f777f6" />
+![Technical Analysis Screenshot](https://github.com/user-attachments/assets/24e433d8-2fb6-4d57-919c-1fb491f777f6)
 
 ## AI Technology Stack
 
@@ -48,6 +50,7 @@ Finance Assistant combines professional-grade financial analysis with cutting-ed
 - **Sentiment Analysis**: Analyzes financial text and stock movements for market sentiment
 - **Smart Routing**: Routes queries to appropriate AI handlers based on understanding
 - **Fallback Handling**: Graceful degradation if AI models are unavailable
+- **GPU Acceleration**: Automatic CUDA detection for faster AI processing
 
 ## Technology Stack
 
@@ -68,25 +71,25 @@ Finance Assistant combines professional-grade financial analysis with cutting-ed
 - **Transformers**: Hugging Face model loading and inference
 - **Sentence Transformers**: Advanced NLP capabilities
 
-<img width="1470" height="837" alt="Screenshot 2025-08-15 at 19 03 19" src="https://github.com/user-attachments/assets/c7d5eade-600d-4b79-a705-334463b441c8" />
+![AI Assistant Screenshot](https://github.com/user-attachments/assets/c7d5eade-600d-4b79-a705-334463b441c8)
 
-## Getting Started
+## Quick Start
 
 ### Prerequisites
-- Python 3.11 or higher
-- Node.js 18 or higher
-- npm or yarn package manager
-- **8GB+ RAM recommended** for AI model loading
+- **Python 3.11+** 
+- **Node.js 18+** 
+- **8GB+ RAM** (recommended for AI models)
+- **5GB+ Storage** (for model downloads)
 
-### Installation
+### Installation & Setup
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>     (ssh or https)
+   git clone https://github.com/Gokulsajeev15/Finance-Assistant.git
    cd Finance-Assistant
    ```
 
-2. **Set up the backend**
+2. **Start the Backend**
    ```bash
    # Install Python dependencies (including AI models)
    uv sync
@@ -94,8 +97,8 @@ Finance Assistant combines professional-grade financial analysis with cutting-ed
    # Start the backend server
    python start_backend.py
    ```
-
-3. **Set up the frontend**
+   
+3. **Start the Frontend**
    ```bash
    # Navigate to frontend directory
    cd frontend
@@ -107,31 +110,33 @@ Finance Assistant combines professional-grade financial analysis with cutting-ed
    npm run dev
    ```
 
-4. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
+4. **Access the Application**
+   - **Frontend**: http://localhost:3000
+   - **Backend API**: http://localhost:8000
+   - **API Documentation**: http://localhost:8000/docs
 
 ## Usage Examples
 
-### Web Interface
-The frontend provides three main sections accessible through clean tab navigation:
+### Web Interface Usage
+The frontend provides three main sections:
 
-**Companies Tab**: Search and browse Fortune 500 companies with filters by sector, industry, and financial metrics.
+- **Companies Tab**: Browse top 100 companies by market cap with sector and industry filters
+- **Technical Analysis Tab**: Enter company names or ticker symbols for comprehensive analysis
+- **AI Assistant Tab**: Ask questions in natural language powered by real AI models
 
-**Technical Analysis Tab**: Enter company names or ticker symbols to get comprehensive technical analysis including price trends, RSI signals, moving averages, and Bollinger Bands.
+### Example AI Queries
+```
+"Analyze Apple's performance"
+"Technical analysis of Tesla" 
+"How is Microsoft doing?"
+"What's Amazon's revenue?"
+"Explain diversification"
+"What is the 98th ranked company?"
+```
 
-**AI Assistant Tab**: Ask questions in natural language - now powered by **real AI models**:
-- "Analyze Apple's performance"
-- "Technical analysis of Tesla" 
-- "How is Microsoft doing?"
-- "What's Amazon's revenue?"
-- "Explain diversification"
-- "What is compound interest?"
-
-### API Usage
+### API Usage Examples
 ```bash
-# Get comprehensive company analysis
+# Get comprehensive technical analysis
 curl "http://localhost:8000/api/v1/technical-analysis/AAPL"
 
 # Search companies by name or sector
@@ -140,21 +145,25 @@ curl "http://localhost:8000/api/v1/companies/search?q=technology"
 # Process natural language queries with AI
 curl -X POST "http://localhost:8000/api/v1/ai/query?query=Analyze Tesla performance"
 
-# Get Fortune 500 top companies
+# Get top 100 companies by market cap
 curl "http://localhost:8000/api/v1/companies/top"
+
+# Get cache information (updates every 6 hours)
+curl "http://localhost:8000/api/v1/companies/cache/info"
 ```
 
 ## API Endpoints
 
-### Core Endpoints
+### System Health
 - `GET /` - Application welcome message
 - `GET /health` - System health check and status
 
 ### Company Data
-- `GET /api/v1/companies/top` - Fortune 500 top companies
+- `GET /api/v1/companies/top` - Top 100 companies by market cap
 - `GET /api/v1/companies/search?q={query}` - Search companies by name, sector, or industry
 - `GET /api/v1/companies/{name}` - Detailed company information
-- `GET /api/v1/companies/sector/{sector}` - Companies by sector
+- `GET /api/v1/companies/cache/info` - Cache status and update information
+- `GET /api/v1/companies/cache/refresh` - Force refresh company data
 
 ### Technical Analysis
 - `GET /api/v1/technical-analysis/{ticker}` - Complete technical analysis
@@ -163,7 +172,7 @@ curl "http://localhost:8000/api/v1/companies/top"
 - `GET /api/v1/technical-analysis/{ticker}/moving-averages` - Moving averages analysis
 
 ### AI Processing
-- `POST /api/v1/ai/query` - Process natural language financial queries using **real AI models**
+- `POST /api/v1/ai/query` - Process natural language financial queries using real AI models
 - `GET /api/v1/ai/examples` - Get example queries and usage patterns
 
 ## Project Structure
@@ -173,61 +182,59 @@ Finance-Assistant/
 ├── start_backend.py              # Backend startup script
 ├── backend/                      # FastAPI backend application
 │   ├── app/
-│   │   ├── main.py              # Main FastAPI application
-│   │   ├── dependencies.py     # Service dependency injection
+│   │   ├── main.py                  # Main FastAPI application
+│   │   ├── dependencies.py          # Service dependency injection
 │   │   ├── models/
-│   │   │   └── models.py        # Pydantic data models
-│   │   ├── routers/             # API route handlers
-│   │   │   ├── companies.py     # Fortune 500 company endpoints
-│   │   │   ├── technical_analysis.py  # Technical analysis endpoints
-│   │   │   └── ai_queries.py    # AI query processing endpoints
-│   │   └── services/            # Business logic services
-│   │       ├── stock_data_service.py     # Enhanced stock data service
-│   │       ├── company_database.py      # Company database service
-│   │       ├── huggingface_ai.py        # **Real AI models** (FinBERT, RoBERTa, Sentence Transformers)
-│   │       └── data_cache.py           # Caching layer
-│   └── Dockerfile               # Docker containerization
+│   │   │   └── models.py            # Pydantic data models
+│   │   ├── routers/                 # API route handlers
+│   │   │   ├── companies.py         # Company endpoints
+│   │   │   ├── technical_analysis.py # Technical analysis endpoints
+│   │   │   └── ai_queries.py        # AI query processing endpoints
+│   │   └── services/                # Business logic services
+│   │       ├── dynamic_companies.py # Dynamic top 100 companies service
+│   │       ├── stock_data_service.py # Enhanced stock data service
+│   │       ├── huggingface_ai.py    # Real AI models (FinBERT, RoBERTa, etc.)
+│   │       └── data_cache.py        # Caching layer
+│   └── Dockerfile                   # Docker containerization
 ├── frontend/                     # React frontend application
 │   ├── src/
-│   │   ├── components/          # React components
-│   │   │   ├── AppHeader.jsx    # Application header
-│   │   │   ├── CompanySearchBar.jsx    # Search functionality
+│   │   ├── components/              # React components
+│   │   │   ├── AppHeader.jsx        # Application header
+│   │   │   ├── CompanySearchBar.jsx # Search functionality
 │   │   │   ├── CompanyInfoCard.jsx  # Company display cards
-│   │   │   ├── StockAnalysisPanel.jsx  # Technical analysis interface
-│   │   │   └── FinancialChatbot.jsx   # **AI assistant interface**
-│   │   ├── services/
+│   │   │   ├── StockAnalysisPanel.jsx # Technical analysis interface
+│   │   │   └── FinancialChatbot.jsx # AI assistant interface
+│   │   ├── api_services/
 │   │   │   └── financial_api_client.js # API service layer
-│   │   ├── App.jsx              # Main application component
-│   │   ├── main.jsx             # Application entry point
-│   │   └── index.css            # Global styles
-│   ├── package.json             # Frontend dependencies
-│   ├── vite.config.js           # Vite build configuration
-│   └── tailwind.config.js       # Tailwind CSS configuration
-├── data/                         # Reference data files
-│   └── fortune_500_2024.pdf     # Fortune 500 dataset
-├── pyproject.toml               # Python dependencies (including AI libraries)
-└── README.md                    # Project documentation
+│   │   ├── App.jsx                  # Main application component
+│   │   ├── main.jsx                 # Application entry point
+│   │   └── index.css                # Global styles
+│   ├── package.json                 # Frontend dependencies
+│   ├── vite.config.js               # Vite build configuration
+│   └── tailwind.config.js           # Tailwind CSS configuration
+├── pyproject.toml                # Python dependencies (including AI libraries)
+└── README.md                     # Project documentation
 ```
 
-## Features in Detail
+## Key Features in Detail
 
 ### Intelligent Company Recognition
-The system recognizes over 70 company names and variations, allowing users to type natural names instead of remembering ticker symbols:
-- "Apple" automatically maps to AAPL
-- "Tesla" automatically maps to TSLA
-- "Microsoft" automatically maps to MSFT
-- "Warren Buffett" automatically maps to Berkshire Hathaway
+The system recognizes company names and variations, allowing natural language input:
+- **"Apple"** → automatically maps to AAPL
+- **"Tesla"** → automatically maps to TSLA  
+- **"Microsoft"** → automatically maps to MSFT
+- **"Berkshire Hathaway"** → automatically maps to BRK-A
 
 ### Advanced Technical Analysis
 Comprehensive technical analysis includes:
 - **RSI Analysis**: 14-day Relative Strength Index with overbought/oversold signals
-- **Moving Averages**: SMA 20/50 and EMA 12/26 with trend analysis
+- **Moving Averages**: SMA 20/50 and EMA 12/26 with trend analysis  
 - **Bollinger Bands**: Upper, middle, and lower bands with position analysis
 - **Price Analysis**: 6-month range positioning and volume analysis
 - **Market Context**: Market cap categorization and sector information
 
-### **AI-Powered Insights**
-The AI assistant uses **real machine learning models** for detailed, context-aware responses:
+### AI-Powered Insights
+The AI assistant uses real machine learning models for detailed, context-aware responses:
 - **Intent Classification**: Automatically understands question types using Sentence Transformers
 - **Sentiment Analysis**: Analyzes financial sentiment using FinBERT
 - **Smart Question Answering**: Handles complex queries using RoBERTa
@@ -236,19 +243,25 @@ The AI assistant uses **real machine learning models** for detailed, context-awa
 - **Technical Summaries**: Detailed technical analysis with actionable signals
 - **Natural Language**: Truly understands questions in plain English
 
-## Development
+### Dynamic Data Management
+- **Real-time Updates**: Top 100 companies refreshed every 6 hours
+- **Smart Caching**: In-memory caching for optimal performance
+- **Parallel Processing**: Concurrent API calls for faster data retrieval
+- **Automatic Fallback**: Graceful handling of API failures
 
-### Running in Development Mode
+## Development & Deployment
+
+### Development Mode
 ```bash
 # Backend development (with AI models)
 python start_backend.py
 
-# Frontend development
+# Frontend development  
 cd frontend
 npm run dev
 ```
 
-### Building for Production
+### Production Build
 ```bash
 # Frontend production build
 cd frontend
@@ -258,57 +271,53 @@ npm run build
 uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 ```
 
-### **AI Model Management**
-```bash
-# Models are automatically downloaded on first run
-# GPU acceleration is automatically detected
-# Fallback to CPU if CUDA is unavailable
-```
-
-### Code Quality Standards
-- **Type Safety**: Full TypeScript-style type hints in Python
-- **Error Handling**: Comprehensive error handling with meaningful messages
-- **Clean Architecture**: Separation of concerns with clear module boundaries
-- **Documentation**: Extensive inline documentation and API specs
-- **Performance**: Optimized queries and efficient data processing
-- **AI Integration**: Robust fallback handling for AI model failures
+### AI Model Management
+- **Auto-Download**: Models downloaded automatically on first run
+- **GPU Support**: Automatic CUDA detection for 10x+ speed improvement  
+- **Fallback**: Graceful degradation to rule-based responses if models fail
+- **Memory Optimization**: Efficient model loading and memory management
 
 ## API Response Examples
 
 ### Technical Analysis Response
 ```json
 {
-  "success": true,
   "ticker": "AAPL",
-  "company_name": "Apple Inc.",
-  "sector": "Technology",
-  "indicators": {
+  "last_updated": "2025-09-04T14:38:02.154353",
+  "stock_data": {
+    "ticker": "AAPL", 
+    "current_price": 230.89,
+    "change": -1.75,
+    "change_percent": -0.76,
+    "volume": 58415211,
+    "52_week_high": 249.39,
+    "52_week_low": 168.80,
+    "company_name": "Apple Inc.",
+    "sector": "Technology",
+    "market_cap": 3500000000000,
+    "pe_ratio": 28.5,
+    "dividend_yield": 0.44
+  },
+  "technical_data": {
     "rsi": {
-      "current": 67.08,
+      "value": 67.08,
       "interpretation": "Neutral"
     },
-    "moving_averages": {
-      "sma_20": 216.59,
-      "sma_50": 209.36,
-      "ema_12": 223.27,
-      "ema_26": 217.13
-    },
+    "sma_20": 216.59,
+    "sma_50": 209.36,
+    "ema_12": 223.27, 
+    "ema_26": 217.13,
     "bollinger_bands": {
       "upper": 237.22,
       "middle": 216.59,
       "lower": 195.97
-    }
-  },
-  "price_data": {
-    "current_price": 230.89,
-    "high_6m": 249.39,
-    "low_6m": 168.80,
-    "volume_avg": 58415211
+    },
+    "trend": "Up"
   }
 }
 ```
 
-### **AI Query Response**
+### AI Query Response
 ```json
 {
   "type": "analysis",
@@ -318,43 +327,72 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
     "stock_data": {...},
     "technical_data": {...},
     "ai_sentiment": {
-      "label": "positive",
+      "label": "positive", 
       "score": 0.85
     }
   }
 }
 ```
 
-## **Performance & Requirements**
+## Performance & Requirements
 
-### **AI Model Loading**
-- **First Run**: Models are downloaded (~2-3GB total)
-- **Memory Usage**: ~4-6GB RAM for all AI models
+### System Requirements
+- **Minimum**: 8GB RAM, Python 3.11+, Node.js 18+
+- **Recommended**: 16GB RAM, CUDA-capable GPU for AI acceleration
+- **Storage**: 5GB+ free space for AI models and data cache
+
+### AI Model Performance
+- **First Run**: AI models downloaded automatically (~2-3GB total)
+- **Memory Usage**: ~4-6GB RAM for all AI models loaded
 - **GPU Support**: Automatic CUDA detection for 10x+ speed improvement
-- **Fallback**: Graceful degradation to rule-based responses if models fail
+- **CPU Fallback**: Graceful degradation to CPU if GPU unavailable
 
-### **System Requirements**
-- **Minimum**: 8GB RAM, Python 3.11+
-- **Recommended**: 16GB RAM, CUDA-capable GPU
-- **Storage**: 5GB+ free space for models and data
+### Data Update Cycle
+- **Company Data**: Refreshed every 6 hours automatically
+- **Stock Prices**: Real-time via Yahoo Finance API
+- **Cache Strategy**: In-memory with intelligent invalidation
+- **Performance**: Sub-second response times for cached data
 
 ## Contributing
 
-This project follows clean architecture principles and maintains high code quality standards. When contributing:
+This project follows clean architecture principles and maintains high code quality standards:
 
-1. Follow the existing code structure and naming conventions
-2. Add appropriate type hints and documentation
-3. Include error handling for new features
-4. Test both frontend and backend integration
-5. Maintain the clean, professional design aesthetic
-6. **Test AI model integration** and fallback scenarios
+1. **Code Structure**: Follow existing patterns and naming conventions
+2. **Type Safety**: Add appropriate type hints and documentation  
+3. **Error Handling**: Include comprehensive error handling for new features
+4. **Testing**: Test both frontend and backend integration thoroughly
+5. **AI Integration**: Test AI model integration and fallback scenarios
+6. **Design**: Maintain clean, professional design aesthetic
+
+### Code Quality Standards
+- **Type Safety**: Full type hints in Python with Pydantic models
+- **Error Handling**: Comprehensive error handling with meaningful messages
+- **Clean Architecture**: Separation of concerns with clear module boundaries
+- **Documentation**: Extensive inline documentation and API specs
+- **Performance**: Optimized queries and efficient data processing
+- **AI Integration**: Robust fallback handling for AI model failures
+
+## What Makes This Special
+
+- **Real Data**: Top 100 companies by actual market cap, not static lists
+- **Real AI**: Actual ML models, not rule-based chatbots
+- **Performance**: Sub-second responses with intelligent caching
+- **Always Fresh**: Auto-updating data every 6 hours
+- **User Focused**: Natural language queries, company name recognition
+- **Production Ready**: Scalable architecture, comprehensive error handling
 
 ## License
 
 This project is available for educational and personal use. Please review the license file for detailed terms and conditions.
 
-## Support
+## Support & Questions
 
-For questions, issues, or feature requests, please refer to the project documentation or submit an issue through the appropriate channels.
+For questions, issues, or feature requests:
+- Check the comprehensive API documentation at `/docs`
+- Submit issues through the project repository
+- Review existing documentation and examples
+- Test with the provided API endpoints
 
+---
 
+**Ready to explore the financial markets with AI-powered insights!**

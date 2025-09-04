@@ -206,7 +206,7 @@ class HuggingFaceFinancialAI:
         try:
             stock_data = self.stock_service.get_stock_data(ticker)
             technical_data = self.stock_service.get_technical_indicators(ticker)
-            company_info = self.company_service.get_company_by_ticker(ticker)
+            company_info = await self.company_service.get_company_by_ticker(ticker)
             
             if 'error' in stock_data:
                 return {"type": "error", "message": f"Couldn't analyze {ticker}"}
@@ -272,7 +272,7 @@ class HuggingFaceFinancialAI:
         """AI-powered company information"""
         try:
             stock_data = self.stock_service.get_stock_data(ticker)
-            company_info = self.company_service.get_company_by_ticker(ticker)
+            company_info = await self.company_service.get_company_by_ticker(ticker)
             
             if 'error' in stock_data:
                 return {"type": "error", "message": f"Couldn't find info about {ticker}"}
@@ -288,7 +288,7 @@ class HuggingFaceFinancialAI:
                 revenue = company_info.get('revenue', 0)
                 
                 message += f"**Sector:** {sector}\n"
-                message += f"**Fortune 500 Rank:** #{rank}\n"
+                message += f"**Market Cap Rank:** #{rank}\n"
                 message += f"**Revenue:** ${revenue:,} million\n"
             
             message += f"**Current Stock:** ${price:.2f}"

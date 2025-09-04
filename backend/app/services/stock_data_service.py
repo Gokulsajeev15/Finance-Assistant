@@ -178,6 +178,3 @@ class SimpleStockService:
         except Exception as e:
             logger.error(f"Error searching for {query}: {e}")
             return []
-    
-# Import pandas for the RSI calculation
-import pandas as pd

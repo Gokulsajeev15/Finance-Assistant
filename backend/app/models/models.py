@@ -260,6 +260,15 @@ class AIQueryRequest(BaseModel):
     include_fundamental: bool = False
     include_sentiment: bool = False
 
+    @validator('query')
+    def validate_query(cls, v):
+        """Validate AI query"""
+        if not v.strip():
+            raise ValueError("Query cannot be empty")
+        if len(v) > 1000:
+            raise ValueError("Query too long (max 1000 characters)")
+        return v.strip()
+
 class AIQueryResponse(BaseResponse):
     query_type: QueryType
     query: str
@@ -273,6 +282,21 @@ class PortfolioOptimizationRequest(BaseModel):
     investment_amount: float = Field(..., gt=0)
     target_return: Optional[float] = None
     constraints: Optional[Dict[str, Any]] = None
+
+    @validator('tickers')
+    def validate_tickers(cls, v):
+        """Validate ticker symbols"""
+        for ticker in v:
+            if not ticker.isalpha() or len(ticker) > 5:
+                raise ValueError(f"Invalid ticker symbol: {ticker}")
+        return v
+
+    @validator('investment_amount')
+    def validate_investment_amount(cls, v):
+        """Validate investment amount"""
+        if v <= 0:
+            raise ValueError("Investment amount must be positive")
+        return v
 
 class PortfolioOptimizationResponse(BaseResponse):
     optimal_weights: Dict[str, float]
@@ -346,28 +370,3 @@ class PaginatedResponse(BaseModel):
     total_pages: int
     has_next: bool
     has_prev: bool
-
-# Validators
-@validator('tickers')
-def validate_tickers(cls, v):
-    """Validate ticker symbols"""
-    for ticker in v:
-        if not ticker.isalpha() or len(ticker) > 5:
-            raise ValueError(f"Invalid ticker symbol: {ticker}")
-    return v
-
-@validator('investment_amount')
-def validate_investment_amount(cls, v):
-    """Validate investment amount"""
-    if v <= 0:
-        raise ValueError("Investment amount must be positive")
-    return v
-
-@validator('query')
-def validate_query(cls, v):
-    """Validate AI query"""
-    if not v.strip():
-        raise ValueError("Query cannot be empty")
-    if len(v) > 1000:
-        raise ValueError("Query too long (max 1000 characters)")
-    return v.strip()

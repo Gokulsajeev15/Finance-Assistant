@@ -1,21 +1,21 @@
 """
 Dependencies for the Finance Assistant API
-Now with REAL AI using Hugging Face models!
+Now with REAL AI using Hugging Face models and dynamic company data!
 """
-from .services.company_database import SimpleCompanyService
+from .services.dynamic_companies import DynamicCompanyService
 from .services.stock_data_service import SimpleStockService
 from .services.huggingface_ai import HuggingFaceFinancialAI
 from .services.data_cache import CacheService
 
 # Create all our services
-fortune500_service = SimpleCompanyService()
+dynamic_company_service = DynamicCompanyService()
 yahoo_service = SimpleStockService()
-ai_processor = HuggingFaceFinancialAI(yahoo_service, fortune500_service)
+ai_processor = HuggingFaceFinancialAI(yahoo_service, dynamic_company_service)
 cache_service = CacheService()
 
 def get_fortune500_service():
-    """Get Fortune 500 service instance"""
-    return fortune500_service
+    """Get dynamic company service instance (top 100 by market cap)"""
+    return dynamic_company_service
 
 def get_yahoo_service():
     """Get Yahoo Finance service instance"""

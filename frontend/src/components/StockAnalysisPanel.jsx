@@ -17,23 +17,56 @@ const StockAnalysisPanel = () => {
     setError('');
     
     try {
-      // Use AI query to handle company names and get comprehensive technical analysis
-      const response = await financeAPI.processAIQuery(`Technical analysis of ${ticker}`);
+      // First try to get technical analysis directly
+      let analysisData = null;
+      let searchTicker = ticker.trim().toUpperCase();
       
-      if (response.data.type === 'error') {
-        setError(response.data.message);
-        setAnalysis(null);
-      } else {
-        // Transform AI response to match expected format
-        const technicalData = response.data.data;
-        setAnalysis({
-          ...technicalData,
-          company_name: response.data.data?.stock_data?.company_name || ticker,
-          sector: response.data.data?.stock_data?.sector || 'Unknown'
-        });
+      try {
+        // Try direct technical analysis API first
+        const directResponse = await financeAPI.getTechnicalAnalysis(searchTicker);
+        analysisData = directResponse.data;
+      } catch (directError) {
+        // If direct API fails, try to search for the company and get its ticker
+        if (ticker.length > 5 || !ticker.match(/^[A-Z]+$/i)) {
+          try {
+            const searchResponse = await financeAPI.searchCompanies(ticker);
+            if (searchResponse.data && searchResponse.data.length > 0) {
+              searchTicker = searchResponse.data[0].ticker;
+              const directResponse = await financeAPI.getTechnicalAnalysis(searchTicker);
+              analysisData = directResponse.data;
+            }
+          } catch (searchError) {
+            // Fall back to AI query
+            const aiResponse = await financeAPI.processAIQuery(`Technical analysis of ${ticker}`);
+            
+            if (aiResponse.data.type === 'error') {
+              throw new Error(aiResponse.data.message);
+            }
+            
+            // Extract data from AI response
+            analysisData = aiResponse.data.data;
+          }
+        } else {
+          // If it looks like a ticker but failed, try AI as fallback
+          const aiResponse = await financeAPI.processAIQuery(`Technical analysis of ${ticker}`);
+          
+          if (aiResponse.data.type === 'error') {
+            throw new Error(aiResponse.data.message);
+          }
+          
+          // Extract data from AI response
+          analysisData = aiResponse.data.data;
+        }
       }
+      
+      if (analysisData) {
+        setAnalysis(analysisData);
+      } else {
+        throw new Error('No analysis data available');
+      }
+      
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to fetch technical analysis');
+      setError(err.response?.data?.detail || err.message || 'Failed to fetch technical analysis');
       setAnalysis(null);
     } finally {
       setLoading(false);
@@ -81,20 +114,20 @@ const StockAnalysisPanel = () => {
       {analysis && (
         <div className="space-y-6">
           {/* Company Information */}
-          {(analysis.company_name || analysis.sector) && (
+          {(analysis.stock_data?.company_name || analysis.stock_data?.sector) && (
             <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-black">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Company Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {analysis.company_name && (
+                {analysis.stock_data?.company_name && (
                   <div>
                     <span className="text-gray-600">Company:</span>
-                    <span className="ml-2 font-semibold">{analysis.company_name}</span>
+                    <span className="ml-2 font-semibold">{analysis.stock_data.company_name}</span>
                   </div>
                 )}
-                {analysis.sector && (
+                {analysis.stock_data?.sector && (
                   <div>
                     <span className="text-gray-600">Sector:</span>
-                    <span className="ml-2 font-semibold">{analysis.sector}</span>
+                    <span className="ml-2 font-semibold">{analysis.stock_data.sector}</span>
                   </div>
                 )}
               </div>
@@ -131,8 +164,8 @@ const StockAnalysisPanel = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">RSI:</span>
-                  <span className={`font-semibold ${getRSIColor(analysis.technical_data?.rsi?.value || analysis.technical_data?.rsi?.current)}`}>
-                    {analysis.technical_data?.rsi?.value?.toFixed(2) || analysis.technical_data?.rsi?.current?.toFixed(2) || 'N/A'}
+                  <span className={`font-semibold ${getRSIColor(analysis.technical_data?.rsi?.value)}`}>
+                    {analysis.technical_data?.rsi?.value ? analysis.technical_data.rsi.value.toFixed(2) : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between">
