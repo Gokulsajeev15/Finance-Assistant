@@ -244,12 +244,12 @@ OPENAI_MODEL=gpt-4o-mini
 
 ## Recent Improvements
 
-✅ **Dynamic Company Recognition**: AI now automatically finds any company you mention
-✅ **Real-time Data Integration**: All AI responses use current market data
-✅ **Smart Technical Analysis**: RSI interpretations, trend analysis with actionable insights  
-✅ **Unified Management**: Single `manage.sh` script for all operations
-✅ **Clean Architecture**: Organized codebase with clear separation of concerns
-✅ **Comprehensive Documentation**: Updated API docs and user guides
+- **Dynamic Company Recognition**: AI now automatically finds any company you mention
+- **Real-time Data Integration**: All AI responses use current market data
+- **Smart Technical Analysis**: RSI interpretations, trend analysis with actionable insights  
+- **Unified Management**: Single `manage.sh` script for all operations
+- **Clean Architecture**: Organized codebase with clear separation of concerns
+- **Comprehensive Documentation**: Updated API docs and user guides
 
 ## Maintenance
 
