@@ -12,6 +12,14 @@ A modern, AI-powered financial analysis application that provides real-time stoc
 - **Modern UI**: Clean, responsive React frontend with real-time updates
 - **Fast API**: High-performance FastAPI backend with comprehensive documentation
 
+<img width="1470" height="840" alt="Screenshot 2025-09-04 at 20 54 43" src="https://github.com/user-attachments/assets/f134149b-e6d3-4b87-937a-203d75dbcbf6" />
+
+<img width="1470" height="756" alt="Screenshot 2025-09-04 at 22 14 59" src="https://github.com/user-attachments/assets/c8f83505-2d0d-4ebe-9d02-2deead566fe7" />
+
+
+<img width="1462" height="829" alt="Screenshot 2025-09-04 at 21 54 43" src="https://github.com/user-attachments/assets/c23e9b4a-8110-4cfc-837b-226585f6fa30" />
+
+
 ## Tech Stack
 
 ### Backend
@@ -266,43 +274,3 @@ OPENAI_MODEL=gpt-4o-mini
 **View logs:**
 - Backend logs appear in terminal where `./manage.sh dev` is running
 - Frontend logs appear in browser console
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes
-4. Test: `./manage.sh test`
-5. Commit: `git commit -m "Add feature"`
-6. Push: `git push origin feature-name`
-7. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Troubleshooting
-
-**Backend won't start:**
-- Check if port 8000 is free: `lsof -i :8000`
-- Verify Python dependencies: `uv sync`
-- Check environment variables in `.env`
-
-**Frontend won't start:**
-- Check if port 3000+ is free: `lsof -i :3000`
-- Install dependencies: `cd frontend && npm install`
-- Check Node.js version: `node --version` (should be 18+)
-
-**API tests fail:**
-- Ensure backend is running: `curl http://localhost:8000/docs`
-- Check OpenAI API key is valid
-- Verify internet connection for stock data
-
-**Need help?**
-- Check the [API documentation](http://localhost:8000/docs) when running locally
-- Review logs in the terminal
-- Run `./manage.sh test` to verify system health
-
----
-
-**Happy investing!**
