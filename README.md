@@ -4,10 +4,10 @@ A modern, AI-powered financial analysis application that provides real-time stoc
 
 ## Features
 
-- **Real-time Stock Data**: Live prices, market data, and company information for Fortune 500+ companies
+- **Real-time Stock Data**: Live prices, market data, and company information for 100 major companies by market cap
 - **Technical Analysis**: RSI, moving averages, Bollinger bands, and trend analysis with smart interpretations
 - **AI Financial Assistant**: Powered by OpenAI GPT-4o mini with real-time data integration
-- **Dynamic Company Search**: Automatically finds any publicly traded company - no hardcoded lists
+- **Dynamic Company Search**: Searches curated database of 100 major stocks with intelligent name matching
 - **Smart Technical Indicators**: Oversold/overbought signals, trend analysis, and trading insights
 - **Modern UI**: Clean, responsive React frontend with real-time updates
 - **Fast API**: High-performance FastAPI backend with comprehensive documentation
@@ -62,7 +62,7 @@ A modern, AI-powered financial analysis application that provides real-time stoc
    ./manage.sh dev
    ```
 
-This will start both backend (port 8000) and frontend (port 3000+) servers.
+This will start both backend (port 8000) and frontend (port 3001) servers.
 
 ## Management Commands
 
@@ -82,15 +82,12 @@ Use the `./manage.sh` script for all project management:
 
 ### Companies
 - `GET /api/v1/companies/search?q={query}` - Search companies by name or ticker
-- `GET /api/v1/companies/top` - Get top companies by market cap
 
 ### Technical Analysis
-- `GET /api/v1/technical-analysis/{ticker}` - Full technical analysis
-- `GET /api/v1/technical-analysis/{ticker}/rsi` - RSI indicator only
-- `GET /api/v1/technical-analysis/{ticker}/basic` - Basic stock info only
+- `GET /api/v1/technical-analysis/{ticker}` - Full technical analysis (supports company names and tickers)
 
 ### AI Assistant
-- `POST /api/v1/ai/query?query={message}` - Chat with AI financial assistant
+- `POST /api/v1/ai/query?query={message}` - Query AI with financial questions
 
 ### Documentation
 - `GET /docs` - Interactive API documentation (Swagger UI)
@@ -230,10 +227,10 @@ OPENAI_MODEL=gpt-4o-mini
 ## Key Features Explained
 
 ### Smart Company Search
-- Search any publicly traded company: "CSX", "Johnson & Johnson", "Berkshire Hathaway"
+- Search from 100 major companies: "CSX", "Johnson & Johnson", "Berkshire Hathaway"
 - Search by ticker: "AAPL", "GOOGL", "MSFT", "CSX"
-- Dynamic database lookup - automatically finds any Fortune 500+ company
-- No hardcoded lists - adapts as markets change
+- Intelligent name matching with 15+ company aliases (Google→GOOGL, Facebook→META)
+- Exact ticker matching and fuzzy company name search
 
 ### Technical Analysis
 - **RSI**: Relative Strength Index with smart interpretations (oversold/overbought signals)
