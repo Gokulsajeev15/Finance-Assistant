@@ -15,11 +15,22 @@ class OpenAIFinancialAI:
         self._init_client()
 
     def _init_client(self):
-        api_key = os.getenv('OPENAI_API_KEY')
+        # --- HF free tier (active) ---
+        api_key = os.getenv('HF_TOKEN')
         if not api_key:
-            logger.error("OPENAI_API_KEY not set")
+            logger.error("HF_TOKEN not set")
             return
-        self.client = AsyncOpenAI(api_key=api_key)
+        self.client = AsyncOpenAI(
+            api_key=api_key,
+            base_url="https://router.huggingface.co/v1"
+        )
+
+        # --- OpenAI paid (uncomment when you have a key, comment block above) ---
+        # api_key = os.getenv('OPENAI_API_KEY')
+        # if not api_key:
+        #     logger.error("OPENAI_API_KEY not set")
+        #     return
+        # self.client = AsyncOpenAI(api_key=api_key)
 
     async def process_query(self, query):
         return await self._answer(query)
@@ -33,7 +44,8 @@ class OpenAIFinancialAI:
             financial_data = await self._fetch_financial_data(tickers)
 
             response = await self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="openai/gpt-oss-120b:groq",  # HF free tier
+                # model="gpt-4o-mini",             # OpenAI paid
                 messages=[
                     {"role": "system", "content": self._system_prompt()},
                     {"role": "user", "content": self._build_prompt(question, financial_data)}

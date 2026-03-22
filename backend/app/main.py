@@ -50,7 +50,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    ai_status = "ready" if os.getenv('OPENAI_API_KEY') else "needs_api_key"
+    ai_status = "ready" if (os.getenv('HF_TOKEN') or os.getenv('OPENAI_API_KEY')) else "needs_api_key"
     return {
         "status": "healthy",
         "version": "3.0.0",
