@@ -1,67 +1,35 @@
-"""
-Stock Data Service - Gets real-time stock prices and information
-
-This service connects to Yahoo Finance to get:
-- Current stock prices (how much a stock costs right now)
-- Price changes (how much it went up or down today)
-- Company information (name, sector, market cap)
-- Technical indicators (RSI, moving averages)
-
-It's like having a direct line to the stock market!
-"""
 import yfinance as yf
 import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
 
+
 class SimpleStockService:
-    """A service that fetches live stock market data from Yahoo Finance"""
-    
-    def __init__(self):
-        """Set up the service"""
-        pass
-    
+
     def get_stock_data(self, ticker):
-        """Get basic information about a stock"""
         try:
-            # Create a Yahoo Finance ticker object
             stock = yf.Ticker(ticker)
-            
-            # Get recent price history (last 5 days)
             history = stock.history(period="5d")
-            
-            # Get company information
             info = stock.info
-            
-            # Make sure we have data
+
             if history.empty:
                 return {"error": "No data available for this stock"}
-            
-            # Get the most recent prices
-            current_price = float(history['Close'].iloc[-1])  # Today's price
-            previous_price = float(history['Close'].iloc[-2])  # Yesterday's price
-            
-            # Calculate the change
+
+            current_price = float(history['Close'].iloc[-1])
+            previous_price = float(history['Close'].iloc[-2])
             price_change = current_price - previous_price
             percent_change = (price_change / previous_price) * 100
-            
-            # Get today's volume
-            volume = int(history['Volume'].iloc[-1])
-            
-            # Calculate 52-week high and low from history
-            max_52_week = float(history['High'].max()) if len(history) >= 252 else float(history['High'].max())
-            min_52_week = float(history['Low'].min()) if len(history) >= 252 else float(history['Low'].min())
-            
-            # Return all the information in a simple format
+
             return {
                 "ticker": ticker.upper(),
                 "current_price": current_price,
                 "change": price_change,
                 "change_percent": percent_change,
-                "volume": volume,
-                "52_week_high": max_52_week,
-                "52_week_low": min_52_week,
+                "volume": int(history['Volume'].iloc[-1]),
+                # 52-week range from 5-day history is approximate; will be replaced with Alpaca in Phase 1
+                "52_week_high": float(history['High'].max()),
+                "52_week_low": float(history['Low'].min()),
                 "company_name": info.get('longName', ticker),
                 "sector": info.get('sector', 'Unknown'),
                 "industry": info.get('industry', 'Unknown'),
@@ -69,41 +37,30 @@ class SimpleStockService:
                 "pe_ratio": info.get('trailingPE'),
                 "dividend_yield": info.get('dividendYield')
             }
-            
+
         except Exception as e:
             logger.error(f"Error getting data for {ticker}: {e}")
             return {"error": f"Could not get data for {ticker}"}
-    
+
     def get_technical_indicators(self, ticker):
-        """Get some basic technical indicators (simple stuff)"""
         try:
-            # Get the stock
             stock = yf.Ticker(ticker)
-            
-            # Get more history for calculations
-            history = stock.history(period="3mo")  # 3 months of data
-            
+            history = stock.history(period="3mo")
+
             if history.empty:
                 return {"error": "No data available for technical analysis"}
-            
-            # Calculate RSI (Relative Strength Index)
-            # This shows if a stock is overbought or oversold
-            rsi = self._calculate_simple_rsi(history['Close'])
-            
-            # Calculate simple moving averages
-            sma_20 = history['Close'].rolling(window=20).mean().iloc[-1]  # 20-day average
-            sma_50 = history['Close'].rolling(window=50).mean().iloc[-1]  # 50-day average
-            
-            # Calculate exponential moving averages
-            ema_12 = history['Close'].ewm(span=12).mean().iloc[-1]  # 12-day EMA
-            ema_26 = history['Close'].ewm(span=26).mean().iloc[-1]  # 26-day EMA
-            
-            # Calculate Bollinger Bands (20-period, 2 standard deviations)
-            sma_20_for_bb = history['Close'].rolling(window=20).mean()
+
+            rsi = self._calculate_rsi(history['Close'])
+            sma_20 = history['Close'].rolling(window=20).mean().iloc[-1]
+            sma_50 = history['Close'].rolling(window=50).mean().iloc[-1]
+            ema_12 = history['Close'].ewm(span=12).mean().iloc[-1]
+            ema_26 = history['Close'].ewm(span=26).mean().iloc[-1]
+
+            sma_20_series = history['Close'].rolling(window=20).mean()
             std_20 = history['Close'].rolling(window=20).std()
-            upper_band = sma_20_for_bb + (std_20 * 2)
-            lower_band = sma_20_for_bb - (std_20 * 2)
-            
+            upper_band = sma_20_series + (std_20 * 2)
+            lower_band = sma_20_series - (std_20 * 2)
+
             return {
                 "rsi": {
                     "value": float(rsi),
@@ -120,61 +77,31 @@ class SimpleStockService:
                 },
                 "trend": "Up" if sma_20 > sma_50 else "Down"
             }
-            
+
         except Exception as e:
             logger.error(f"Error getting technical indicators for {ticker}: {e}")
             return {"error": f"Could not calculate indicators for {ticker}"}
-    
-    def _calculate_simple_rsi(self, prices, window=14):
-        """Calculate RSI in a simple way"""
+
+    def _calculate_rsi(self, prices, window=14):
         try:
-            # Calculate price changes
             delta = prices.diff()
-            
-            # Separate gains and losses
-            gains = delta.where(delta > 0, 0)  # Only positive changes
-            losses = -delta.where(delta < 0, 0)  # Only negative changes (made positive)
-            
-            # Calculate average gains and losses
+            gains = delta.where(delta > 0, 0)
+            losses = -delta.where(delta < 0, 0)
             avg_gains = gains.rolling(window=window).mean()
             avg_losses = losses.rolling(window=window).mean()
-            
-            # Calculate relative strength
             rs = avg_gains / avg_losses
-            
-            # Calculate RSI
-            rsi = 100 - (100 / (1 + rs))
-            
-            return rsi.iloc[-1]  # Return the most recent RSI
-            
+            return (100 - (100 / (1 + rs))).iloc[-1]
         except Exception as e:
-            logger.error(f"Error calculating RSI: {e}")
-            return 50  # Return neutral RSI if calculation fails
-    
+            logger.error(f"RSI calculation failed: {e}")
+            return 50  # neutral fallback
+
     def _interpret_rsi(self, rsi):
-        """Explain what the RSI means in simple terms"""
         if rsi >= 70:
-            return "Overbought - stock might be expensive right now"
+            return "Overbought"
         elif rsi <= 30:
-            return "Oversold - stock might be cheap right now"
-        else:
-            return "Neutral - stock is neither expensive nor cheap"
-    
+            return "Oversold"
+        return "Neutral"
+
     def search_stock(self, query):
-        """Search for stocks by company name or ticker"""
-        try:
-            # This is a simple implementation
-            # In a real app, you might use a stock search API
-            query = query.upper()
-            
-            # Try to get stock data to see if it's a valid ticker
-            result = self.get_stock_data(query)
-            
-            if "error" not in result:
-                return [result]
-            else:
-                return []
-                
-        except Exception as e:
-            logger.error(f"Error searching for {query}: {e}")
-            return []
+        result = self.get_stock_data(query.upper())
+        return [result] if "error" not in result else []
