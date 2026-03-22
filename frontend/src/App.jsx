@@ -1,15 +1,3 @@
-/**
- * Main App Component - The heart of our Finance Assistant
- * 
- * This is the main page that users see. It has three tabs:
- * 1. Companies - Browse and search big companies
- * 2. Technical Analysis - Analyze stock performance  
- * 3. AI Assistant - Chat with our financial AI
- * 
- * Think of this as the control center for the whole app!
- */
-
-// Import React tools and our components with clear names
 import { useState, useEffect } from 'react';
 import AppHeader from './components/AppHeader';
 import CompanySearchBar from './components/CompanySearchBar';
@@ -19,50 +7,39 @@ import FinancialChatbot from './components/FinancialChatbot';
 import { financeAPI } from './api_services/financial_api_client';
 
 function App() {
-  // Store information about companies we're showing
   const [companies, setCompanies] = useState([]);
-  
-  // Track if we're loading data
   const [loading, setLoading] = useState(false);
-  
-  // Store any error messages
   const [error, setError] = useState('');
-  
-  // Track which tab is currently selected
   const [activeTab, setActiveTab] = useState('companies');
 
-  // Load top companies when the app starts
   useEffect(() => {
     loadTopCompanies();
   }, []);
 
-  // Function to load the top companies from our API
   const loadTopCompanies = async () => {
-    setLoading(true);  // Show loading spinner
+    setLoading(true);
     try {
       const response = await financeAPI.getTopCompanies();
-      setCompanies(response.data);  // Store the companies
-      setError('');  // Clear any old errors
+      setCompanies(response.data);
+      setError('');
     } catch (err) {
       setError('Failed to load companies');
       console.error(err);
     } finally {
-      setLoading(false);  // Hide loading spinner
+      setLoading(false);
     }
   };
 
-  // Function to search for companies
   const handleSearch = async (query) => {
-    setLoading(true);  // Show loading spinner
-    setError('');  // Clear any old errors
-    
+    setLoading(true);
+    setError('');
     try {
       const response = await financeAPI.searchCompanies(query);
-      setCompanies(response.data);  // Show search results
+      setCompanies(response.data);
     } catch (err) {
       setError(err.response?.data?.detail || 'Search failed');
     } finally {
-      setLoading(false);  // Hide loading spinner
+      setLoading(false);
     }
   };
 
@@ -75,9 +52,8 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tab Navigation */}
         <div className="flex justify-center mb-8">
           <div className="flex space-x-1 bg-gray-200 rounded-lg p-1">
             {tabs.map((tab) => (
