@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { financeAPI } from '../api_services/financial_api_client';
 import { BarChart3 } from 'lucide-react';
 
@@ -15,58 +14,14 @@ const StockAnalysisPanel = () => {
 
     setLoading(true);
     setError('');
-    
+
     try {
-      // First try to get technical analysis directly
-      let analysisData = null;
-      let searchTicker = ticker.trim().toUpperCase();
-      
-      try {
-        // Try direct technical analysis API first
-        const directResponse = await financeAPI.getTechnicalAnalysis(searchTicker);
-        analysisData = directResponse.data;
-      } catch (directError) {
-        // If direct API fails, try to search for the company and get its ticker
-        if (ticker.length > 5 || !ticker.match(/^[A-Z]+$/i)) {
-          try {
-            const searchResponse = await financeAPI.searchCompanies(ticker);
-            if (searchResponse.data && searchResponse.data.length > 0) {
-              searchTicker = searchResponse.data[0].ticker;
-              const directResponse = await financeAPI.getTechnicalAnalysis(searchTicker);
-              analysisData = directResponse.data;
-            }
-          } catch (searchError) {
-            // Fall back to AI query
-            const aiResponse = await financeAPI.processAIQuery(`Technical analysis of ${ticker}`);
-            
-            if (aiResponse.data.type === 'error') {
-              throw new Error(aiResponse.data.message);
-            }
-            
-            // Extract data from AI response
-            analysisData = aiResponse.data.data;
-          }
-        } else {
-          // If it looks like a ticker but failed, try AI as fallback
-          const aiResponse = await financeAPI.processAIQuery(`Technical analysis of ${ticker}`);
-          
-          if (aiResponse.data.type === 'error') {
-            throw new Error(aiResponse.data.message);
-          }
-          
-          // Extract data from AI response
-          analysisData = aiResponse.data.data;
-        }
-      }
-      
-      if (analysisData) {
-        setAnalysis(analysisData);
-      } else {
-        throw new Error('No analysis data available');
-      }
-      
+      // The backend handles both ticker symbols (AAPL) and company names (Apple).
+      // No frontend fallback needed — just call the API and show what comes back.
+      const response = await financeAPI.getTechnicalAnalysis(ticker.trim().toUpperCase());
+      setAnalysis(response.data);
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'Failed to fetch technical analysis');
+      setError(err.response?.data?.detail || 'Could not find data for that ticker or company name.');
       setAnalysis(null);
     } finally {
       setLoading(false);

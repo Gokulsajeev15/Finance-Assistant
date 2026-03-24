@@ -10,10 +10,10 @@ dependencies = [
     "uvicorn>=0.35.0",
     "pydantic>=2.11.7",
     
-    # Stock data
-    "yfinance>=0.2.65",
+    # Stock data — Alpha Vantage (stock_data.py), yfinance still used by companies.py
     "pandas>=2.3.1",
     "numpy>=1.24.0",
+    "yfinance>=0.2.65",
     
     # AI/ML for financial analysis
     "openai>=1.45.0",
