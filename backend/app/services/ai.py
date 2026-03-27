@@ -1,9 +1,19 @@
+import asyncio
+import json
 import logging
 import os
-from openai import AsyncOpenAI
 from datetime import datetime
+from openai import AsyncOpenAI
 
 logger = logging.getLogger(__name__)
+
+# The available tools our AI can request. Each maps to a real Python function.
+# We describe these in the planning prompt so the LLM knows what it can ask for.
+AVAILABLE_TOOLS = {
+    "get_stock_price": "Get current price, daily change, and volume for a ticker.",
+    "get_technical_analysis": "Get RSI, moving averages (SMA/EMA), Bollinger Bands, and trend for a ticker.",
+    "get_company_info": "Get company background: sector, market cap, employees, description."
+}
 
 
 class OpenAIFinancialAI:
@@ -37,139 +47,168 @@ class OpenAIFinancialAI:
 
     async def _answer(self, question):
         if not self.client:
-            return {"type": "error", "message": "AI service not available. Check your OpenAI API key."}
+            return {"type": "error", "message": "AI service not available. Check your API key."}
 
         try:
-            tickers = await self._extract_tickers(question)
-            financial_data = await self._fetch_financial_data(tickers)
+            # --- Call 1: ask the LLM to plan what data it needs ---
+            # Instead of using the tool calling protocol (which this HF model
+            # handles poorly), we ask the LLM to output a simple JSON plan.
+            # We then parse it and run the real functions ourselves.
+            plan = await self._get_plan(question)
 
-            response = await self.client.chat.completions.create(
-                model="openai/gpt-oss-120b:groq",  # HF free tier
-                # model="gpt-4o-mini",             # OpenAI paid
+            # If the LLM says no tools needed, answer directly
+            if not plan:
+                return await self._answer_directly(question)
+
+            # --- Run the plan: fetch all the data ---
+            data_results = await self._execute_plan(plan)
+
+            # --- Call 2: give the LLM the question + real data, get the answer ---
+            data_text = json.dumps(data_results, indent=2)
+            final_response = await self.client.chat.completions.create(
+                model="openai/gpt-oss-120b:groq",
+                # model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": self._system_prompt()},
-                    {"role": "user", "content": self._build_prompt(question, financial_data)}
+                    {"role": "system", "content": self._answer_prompt()},
+                    {"role": "user", "content": f"{question}\n\nReal-time data:\n{data_text}"}
                 ],
                 max_tokens=1500,
-                temperature=0.3  # low temperature keeps responses factual and grounded
+                temperature=0.3
             )
 
-            answer = response.choices[0].message.content
             return {
-                "type": self._classify(question),
-                "message": answer,
-                "companies_analyzed": tickers,
-                "has_real_time_data": len(financial_data.get("companies", {})) > 0,
+                "type": "analysis",
+                "message": final_response.choices[0].message.content,
+                "has_real_time_data": len(data_results) > 0,
                 "timestamp": datetime.now().isoformat()
             }
 
         except Exception as e:
-            logger.error(f"OpenAI error: {e}")
+            logger.error(f"AI error: {e}")
             return {"type": "error", "message": "Failed to process your request. Please try again."}
 
-    async def _extract_tickers(self, question):
-        """Pull potential tickers and company names out of the question text."""
-        tickers = []
-        words = question.split()
-        candidates = []
+    async def _get_plan(self, question):
+        """
+        Call 1 — ask the LLM: "what data do you need to answer this question?"
+        The LLM responds with a JSON array of tool calls, e.g.:
+          [{"tool": "get_stock_price", "ticker": "AAPL"},
+           {"tool": "get_technical_analysis", "ticker": "TSLA"}]
+        Or an empty array [] if no live data is needed.
+        """
+        tools_desc = "\n".join(f"  - {name}: {desc}" for name, desc in AVAILABLE_TOOLS.items())
 
-        # Uppercase words 2–5 chars are likely ticker symbols
-        for word in words:
-            clean = word.strip('.,!?()[]{}":;')
-            if 2 <= len(clean) <= 5 and clean.isupper():
-                candidates.append(clean)
-
-        # Words near company indicators (Inc, Corp, etc.) are likely company names
-        indicators = {'corporation', 'corp', 'company', 'inc', 'ltd', 'llc', 'group', 'holdings'}
-        for i, word in enumerate(words):
-            if word.lower().strip('.,!?()[]{}":;') in indicators:
-                start = max(0, i - 2)
-                candidates.append(' '.join(words[start:i + 1]).strip('.,!?()[]{}":;'))
-
-        # Also try individual alpha words as company name searches
-        for word in words:
-            clean = word.strip('.,!?()[]{}":;')
-            if len(clean) > 2 and clean.isalpha():
-                candidates.append(clean)
-
-        for term in candidates[:10]:
-            try:
-                results = await self.company_service.search_companies(term)
-                if results:
-                    ticker = results[0].get('ticker')
-                    if ticker and ticker not in tickers:
-                        tickers.append(ticker)
-                        if len(tickers) >= 5:
-                            break
-            except Exception as e:
-                logger.warning(f"Search failed for '{term}': {e}")
-
-        return tickers
-
-    async def _fetch_financial_data(self, tickers):
-        data = {"market_timestamp": datetime.now().isoformat(), "companies": {}}
-
-        for ticker in tickers:
-            try:
-                company_info = await self.company_service.get_company_by_ticker(ticker)
-                stock_info = self.stock_service.get_stock_data(ticker)
-
-                if company_info and stock_info and 'error' not in stock_info:
-                    data["companies"][ticker] = {
-                        "basic_info": {
-                            "name": company_info.get('name', 'Unknown'),
-                            "sector": company_info.get('sector', 'Unknown'),
-                            "employees": company_info.get('employees', 'N/A')
-                        },
-                        "current_price": stock_info.get('current_price'),
-                        "change_percent": stock_info.get('change_percent'),
-                        "volume": stock_info.get('volume'),
-                        "pe_ratio": stock_info.get('pe_ratio'),
-                        "market_cap": stock_info.get('market_cap')
-                    }
-            except Exception as e:
-                logger.error(f"Failed to fetch data for {ticker}: {e}")
-
-        return data
-
-    def _system_prompt(self):
-        return (
-            "You are a financial AI assistant with access to real-time market data. "
-            "Use the data provided to answer questions factually and concisely. "
-            "For comparisons, analyze all companies. For general questions, provide educational insight. "
-            "Always note that responses are for informational purposes and not financial advice."
+        response = await self.client.chat.completions.create(
+            model="openai/gpt-oss-120b:groq",
+            # model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": (
+                    "You are a planning assistant. Your ONLY job is to decide what data is needed "
+                    "to answer a financial question.\n\n"
+                    "Available tools:\n"
+                    f"{tools_desc}\n\n"
+                    "Rules:\n"
+                    "- If multiple companies are mentioned, include a tool call for EACH company.\n"
+                    "- If the question needs multiple types of data (e.g. company info AND RSI), "
+                    "include BOTH tools for each company.\n"
+                    "- Common ticker mappings: Apple=AAPL, Tesla=TSLA, Nvidia=NVDA, Microsoft=MSFT, "
+                    "Google=GOOGL, Amazon=AMZN, Meta=META.\n"
+                    "- If the question is general (e.g. 'what is RSI?'), return an empty array.\n\n"
+                    "Respond with ONLY a JSON array. No explanation, no markdown, just the JSON.\n"
+                    "Example: [{\"tool\": \"get_stock_price\", \"ticker\": \"AAPL\"}, "
+                    "{\"tool\": \"get_technical_analysis\", \"ticker\": \"AAPL\"}]"
+                )},
+                {"role": "user", "content": question}
+            ],
+            max_tokens=500,
+            temperature=0
         )
 
-    def _build_prompt(self, question, financial_data):
-        prompt = f"Question: {question}\n\n"
-        companies = financial_data.get("companies", {})
+        raw = response.choices[0].message.content.strip()
+        logger.info(f"Plan from LLM: {raw}")
 
-        if companies:
-            prompt += f"Real-time data (as of {financial_data['market_timestamp']}):\n\n"
-            for ticker, d in companies.items():
-                prompt += f"**{ticker} — {d['basic_info']['name']}**\n"
-                prompt += f"  Sector: {d['basic_info']['sector']}\n"
-                prompt += f"  Price: ${d['current_price']} ({d['change_percent']:.2f}%)\n"
-                prompt += f"  Volume: {d['volume']}\n"
-                prompt += f"  P/E: {d['pe_ratio']} | Market Cap: {d['market_cap']}\n"
-                prompt += f"  Employees: {d['basic_info']['employees']}\n\n"
-        else:
-            prompt += "No specific company data found for this query.\n\n"
+        # Parse the JSON plan — handle cases where LLM wraps it in markdown
+        try:
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            logger.warning(f"Could not parse plan, falling back to direct answer: {raw}")
+            return []
 
-        return prompt
+    # Tools that hit Alpha Vantage — need a 1.2s gap between calls to stay under
+    # the free tier's 1 req/second rate limit
+    _AV_TOOLS = {"get_stock_price", "get_technical_analysis"}
 
-    def _classify(self, question):
-        q = question.lower()
-        if any(w in q for w in ['compare', 'versus', 'vs', 'between']):
-            return 'comparison'
-        if any(w in q for w in ['price', 'cost', 'trading', 'worth']):
-            return 'price'
-        if any(w in q for w in ['analysis', 'technical', 'performance']):
-            return 'analysis'
-        if any(w in q for w in ['company', 'business', 'about']):
-            return 'company'
-        if any(w in q for w in ['invest', 'should i', 'strategy']):
-            return 'strategy'
-        if any(w in q for w in ['what is', 'explain', 'define']):
-            return 'education'
-        return 'general'
+    async def _execute_plan(self, plan):
+        """Run each tool in the plan and collect results."""
+        results = {}
+        last_was_av_call = False  # track whether the previous call hit Alpha Vantage
+
+        for call in plan:
+            tool = call.get("tool", "")
+            ticker = call.get("ticker", "").upper()
+            key = f"{tool}_{ticker}"
+
+            if key in results:
+                continue  # skip duplicate calls
+
+            # Alpha Vantage allows 1 req/second on the free tier.
+            # If the previous call also hit AV, wait before firing the next one.
+            if last_was_av_call and tool in self._AV_TOOLS:
+                await asyncio.sleep(1.2)
+
+            try:
+                if tool == "get_stock_price":
+                    data = self.stock_service.get_stock_data(ticker)
+
+                elif tool == "get_technical_analysis":
+                    data = self.stock_service.get_technical_indicators(ticker)
+
+                elif tool == "get_company_info":
+                    data = await self.company_service.get_company_by_ticker(ticker)
+                    if not data:
+                        data = {"error": f"No company info found for {ticker}"}
+
+                else:
+                    logger.warning(f"Unknown tool in plan: {tool}")
+                    continue
+
+                logger.info(f"Executed: {tool}({ticker})")
+                results[key] = {"tool": tool, "ticker": ticker, "data": data}
+
+            except Exception as e:
+                logger.error(f"Tool {tool} failed for {ticker}: {e}")
+                results[key] = {"tool": tool, "ticker": ticker, "data": {"error": str(e)}}
+
+            last_was_av_call = tool in self._AV_TOOLS
+
+        return results
+
+    async def _answer_directly(self, question):
+        """For general questions that need no live data."""
+        response = await self.client.chat.completions.create(
+            model="openai/gpt-oss-120b:groq",
+            # model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": self._answer_prompt()},
+                {"role": "user", "content": question}
+            ],
+            max_tokens=1500,
+            temperature=0.3
+        )
+        return {
+            "type": "general",
+            "message": response.choices[0].message.content,
+            "has_real_time_data": False,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    def _answer_prompt(self):
+        return (
+            "You are a financial AI assistant. Answer questions factually and concisely "
+            "using the real-time data provided. For comparisons, analyze all companies. "
+            "For general questions, provide educational insight. "
+            "Always note that responses are for informational purposes and not financial advice."
+        )

@@ -5,7 +5,7 @@ from ..dependencies import get_stock_service, get_company_service
 router = APIRouter(prefix="/api/v1/technical-analysis", tags=["technical-analysis"])
 
 _STOCK_DATA_KEYS = ["current_price", "change", "change_percent", "volume",
-                    "day_high", "day_low", "52_week_high", "52_week_low"]
+                    "day_high", "day_low", "high_100d", "low_100d"]
 _TECHNICAL_KEYS = ["rsi", "sma_20", "sma_50", "ema_12", "ema_26", "bollinger_bands", "trend"]
 
 

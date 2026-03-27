@@ -75,7 +75,7 @@ class SimpleStockService:
             response = requests.get(BASE_URL, params={
                 "function": "TIME_SERIES_DAILY",
                 "symbol": ticker.upper(),
-                "outputsize": "compact",  # last 100 trading days, enough for SMA50 + RSI14
+                "outputsize": "compact",  # last 100 trading days — enough for SMA50 + RSI14
                 "apikey": self.api_key
             })
             response.raise_for_status()
@@ -129,9 +129,10 @@ class SimpleStockService:
                 "volume": int(df["volume"].iloc[-1]),
                 "day_high": float(df["high"].iloc[-1]),
                 "day_low": float(df["low"].iloc[-1]),
-                # 100-day high/low (compact outputsize = 100 days, not a true 52-week range)
-                "52_week_high": float(df["high"].max()),
-                "52_week_low": float(df["low"].min()),
+                # 100-day high/low — compact outputsize gives ~100 trading days (~5 months).
+                # True 52-week range requires outputsize=full which is a paid Alpha Vantage feature.
+                "high_100d": float(df["high"].max()),
+                "low_100d": float(df["low"].min()),
                 # Technical indicators
                 "rsi": {
                     "value": float(rsi),

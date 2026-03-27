@@ -99,12 +99,12 @@ const StockAnalysisPanel = () => {
                   <span className="font-semibold">${analysis.stock_data?.current_price?.toFixed(2) || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">52-Week High:</span>
-                  <span className="font-semibold">${analysis.stock_data?.['52_week_high']?.toFixed(2) || 'N/A'}</span>
+                  <span className="text-gray-600">100-Day High:</span>
+                  <span className="font-semibold">${analysis.stock_data?.high_100d?.toFixed(2) || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">52-Week Low:</span>
-                  <span className="font-semibold">${analysis.stock_data?.['52_week_low']?.toFixed(2) || 'N/A'}</span>
+                  <span className="text-gray-600">100-Day Low:</span>
+                  <span className="font-semibold">${analysis.stock_data?.low_100d?.toFixed(2) || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Volume:</span>
