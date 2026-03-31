@@ -4,6 +4,7 @@ import logging
 import os
 from datetime import datetime
 from openai import AsyncOpenAI
+from ..database import save_message, get_history
 
 logger = logging.getLogger(__name__)
 
@@ -42,43 +43,62 @@ class OpenAIFinancialAI:
         #     return
         # self.client = AsyncOpenAI(api_key=api_key)
 
-    async def process_query(self, query):
-        return await self._answer(query)
+    async def process_query(self, query, session_id):
+        return await self._answer(query, session_id)
 
-    async def _answer(self, question):
+    async def _answer(self, question, session_id):
         if not self.client:
             return {"type": "error", "message": "AI service not available. Check your API key."}
 
         try:
+            # Save the user's message to the DB before doing anything else
+            await save_message(session_id, "user", question)
+
+            # Fetch the last 10 messages for this session so the LLM has context.
+            # This is what makes the AI remember what was said earlier.
+            history = await get_history(session_id, limit=10)
+
             # --- Call 1: ask the LLM to plan what data it needs ---
-            # Instead of using the tool calling protocol (which this HF model
-            # handles poorly), we ask the LLM to output a simple JSON plan.
-            # We then parse it and run the real functions ourselves.
-            plan = await self._get_plan(question)
+            plan = await self._get_plan(question, history)
 
             # If the LLM says no tools needed, answer directly
             if not plan:
-                return await self._answer_directly(question)
+                answer = await self._answer_directly(question, history)
+                await save_message(session_id, "ai", answer["message"])
+                return answer
 
             # --- Run the plan: fetch all the data ---
             data_results = await self._execute_plan(plan)
 
-            # --- Call 2: give the LLM the question + real data, get the answer ---
+            # --- Call 2: give the LLM the question + history + real data ---
+            # We build the messages list as a real conversation:
+            # system prompt → past messages → current question with live data
             data_text = json.dumps(data_results, indent=2)
+            messages = [{"role": "system", "content": self._answer_prompt()}]
+
+            # Inject history — the LLM sees the full conversation so far
+            for msg in history[:-1]:  # exclude the current message, we add it below with data
+                messages.append({"role": "user" if msg["role"] == "user" else "assistant", "content": msg["content"]})
+
+            # Current question with the fetched data appended
+            messages.append({"role": "user", "content": f"{question}\n\nReal-time data:\n{data_text}"})
+
             final_response = await self.client.chat.completions.create(
                 model="openai/gpt-oss-120b:groq",
                 # model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": self._answer_prompt()},
-                    {"role": "user", "content": f"{question}\n\nReal-time data:\n{data_text}"}
-                ],
+                messages=messages,
                 max_tokens=1500,
                 temperature=0.3
             )
 
+            ai_message = final_response.choices[0].message.content
+
+            # Save the AI's answer to the DB
+            await save_message(session_id, "ai", ai_message)
+
             return {
                 "type": "analysis",
-                "message": final_response.choices[0].message.content,
+                "message": ai_message,
                 "has_real_time_data": len(data_results) > 0,
                 "timestamp": datetime.now().isoformat()
             }
@@ -87,7 +107,7 @@ class OpenAIFinancialAI:
             logger.error(f"AI error: {e}")
             return {"type": "error", "message": "Failed to process your request. Please try again."}
 
-    async def _get_plan(self, question):
+    async def _get_plan(self, question, history=None):
         """
         Call 1 — ask the LLM: "what data do you need to answer this question?"
         The LLM responds with a JSON array of tool calls, e.g.:
@@ -97,28 +117,40 @@ class OpenAIFinancialAI:
         """
         tools_desc = "\n".join(f"  - {name}: {desc}" for name, desc in AVAILABLE_TOOLS.items())
 
+        # Build the planning conversation — include history so the planner
+        # understands context. e.g. "what about its RSI?" after asking about Apple
+        # → planner sees "Apple" in history and knows to fetch AAPL technical data.
+        planning_messages = [
+            {"role": "system", "content": (
+                "You are a planning assistant. Your ONLY job is to decide what data is needed "
+                "to answer a financial question.\n\n"
+                "Available tools:\n"
+                f"{tools_desc}\n\n"
+                "Rules:\n"
+                "- If multiple companies are mentioned, include a tool call for EACH company.\n"
+                "- If the question needs multiple types of data (e.g. company info AND RSI), "
+                "include BOTH tools for each company.\n"
+                "- Use conversation history to resolve references like 'it', 'that stock', 'the same company'.\n"
+                "- Common ticker mappings: Apple=AAPL, Tesla=TSLA, Nvidia=NVDA, Microsoft=MSFT, "
+                "Google=GOOGL, Amazon=AMZN, Meta=META.\n"
+                "- If the question is general (e.g. 'what is RSI?'), return an empty array.\n\n"
+                "Respond with ONLY a JSON array. No explanation, no markdown, just the JSON.\n"
+                "Example: [{\"tool\": \"get_stock_price\", \"ticker\": \"AAPL\"}, "
+                "{\"tool\": \"get_technical_analysis\", \"ticker\": \"AAPL\"}]"
+            )}
+        ]
+
+        # Add past messages as context for the planner
+        for msg in (history or []):
+            role = "user" if msg["role"] == "user" else "assistant"
+            planning_messages.append({"role": role, "content": msg["content"]})
+
+        planning_messages.append({"role": "user", "content": question})
+
         response = await self.client.chat.completions.create(
             model="openai/gpt-oss-120b:groq",
             # model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": (
-                    "You are a planning assistant. Your ONLY job is to decide what data is needed "
-                    "to answer a financial question.\n\n"
-                    "Available tools:\n"
-                    f"{tools_desc}\n\n"
-                    "Rules:\n"
-                    "- If multiple companies are mentioned, include a tool call for EACH company.\n"
-                    "- If the question needs multiple types of data (e.g. company info AND RSI), "
-                    "include BOTH tools for each company.\n"
-                    "- Common ticker mappings: Apple=AAPL, Tesla=TSLA, Nvidia=NVDA, Microsoft=MSFT, "
-                    "Google=GOOGL, Amazon=AMZN, Meta=META.\n"
-                    "- If the question is general (e.g. 'what is RSI?'), return an empty array.\n\n"
-                    "Respond with ONLY a JSON array. No explanation, no markdown, just the JSON.\n"
-                    "Example: [{\"tool\": \"get_stock_price\", \"ticker\": \"AAPL\"}, "
-                    "{\"tool\": \"get_technical_analysis\", \"ticker\": \"AAPL\"}]"
-                )},
-                {"role": "user", "content": question}
-            ],
+            messages=planning_messages,
             max_tokens=500,
             temperature=0
         )
@@ -186,15 +218,20 @@ class OpenAIFinancialAI:
 
         return results
 
-    async def _answer_directly(self, question):
+    async def _answer_directly(self, question, history=None):
         """For general questions that need no live data."""
+        messages = [{"role": "system", "content": self._answer_prompt()}]
+
+        for msg in (history or []):
+            role = "user" if msg["role"] == "user" else "assistant"
+            messages.append({"role": role, "content": msg["content"]})
+
+        messages.append({"role": "user", "content": question})
+
         response = await self.client.chat.completions.create(
             model="openai/gpt-oss-120b:groq",
             # model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": self._answer_prompt()},
-                {"role": "user", "content": question}
-            ],
+            messages=messages,
             max_tokens=1500,
             temperature=0.3
         )

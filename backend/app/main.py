@@ -9,6 +9,7 @@ load_dotenv()
 
 from .models.models import BaseResponse
 from .routers import companies, technical, ai
+from .database import init_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,6 +38,11 @@ app.add_middleware(
 app.include_router(companies.router)
 app.include_router(technical.router)
 app.include_router(ai.router)
+
+
+@app.on_event("startup")
+async def startup():
+    await init_db()
 
 
 @app.get("/")

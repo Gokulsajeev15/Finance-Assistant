@@ -6,10 +6,12 @@ router = APIRouter(prefix="/api/v1/ai", tags=["AI Assistant"])
 
 
 @router.post("/query")
-async def process_ai_query(query: str, ai_service=Depends(get_openai_service)):
-    """Ask the AI assistant a question about stocks or companies."""
+async def process_ai_query(query: str, session_id: str, ai_service=Depends(get_openai_service)):
+    """Ask the AI assistant a question about stocks or companies.
+    session_id groups messages into a conversation so the AI remembers context.
+    """
     try:
-        response = await ai_service.process_query(query)
+        response = await ai_service.process_query(query, session_id)
         message = response.get("message", "No response available") if isinstance(response, dict) else str(response)
         return BaseResponse(
             success=True,
@@ -42,7 +44,7 @@ async def get_ai_examples():
 async def ai_health_check(ai_service=Depends(get_openai_service)):
     """Check if the AI service is responsive."""
     try:
-        test_response = await ai_service.process_query("Hello, are you working?")
+        test_response = await ai_service.process_query("Hello, are you working?", "health-check")
         return BaseResponse(
             success=True,
             message="AI service is healthy",
